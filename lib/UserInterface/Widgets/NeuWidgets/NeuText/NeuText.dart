@@ -31,7 +31,14 @@ class NeuText extends StatelessWidget {
   }
 }
 
-enum NeuTextSize { light_18, light_16, light_14, bold_18, bold_20 }
+enum NeuTextSize {
+  light_18,
+  light_16,
+  light_14,
+  bold_18,
+  bold_20,
+  bold_25,
+}
 
 double getSizeFrom(NeuTextSize neuTextSize) {
   switch (neuTextSize) {
@@ -44,6 +51,8 @@ double getSizeFrom(NeuTextSize neuTextSize) {
       return 18;
     case NeuTextSize.bold_20:
       return 20;
+    case NeuTextSize.bold_25:
+      return 25;
   }
 }
 
@@ -55,6 +64,7 @@ FontWeight getFontWeight(NeuTextSize neuTextSize) {
       return FontWeight.w600;
     case NeuTextSize.bold_18:
     case NeuTextSize.bold_20:
+    case NeuTextSize.bold_25:
       return FontWeight.w700;
   }
 }
