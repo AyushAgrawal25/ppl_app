@@ -6,11 +6,15 @@ class NeuText extends StatelessWidget {
   final NeuTextSize textSize;
   final String text;
   final Color? color;
+  final TextAlign align;
+  final int? maxLines;
 
   NeuText({
     this.textSize: NeuTextSize.bold_18,
     required this.text,
     this.color,
+    this.maxLines,
+    this.align: TextAlign.left,
   });
 
   @override
@@ -25,32 +29,45 @@ class NeuText extends StatelessWidget {
               : this.color,
           fontWeight: getFontWeight(textSize),
         ),
+        maxLines: this.maxLines,
         textScaleFactor: 1.0,
+        textAlign: this.align,
       ),
     );
   }
 }
 
 enum NeuTextSize {
-  light_18,
-  light_16,
+  light_12,
   light_14,
+  light_16,
+  light_18,
+
+  bold_14,
+  bold_16,
   bold_18,
   bold_20,
+  bold_22,
   bold_25,
 }
 
 double getSizeFrom(NeuTextSize neuTextSize) {
   switch (neuTextSize) {
+    case NeuTextSize.light_12:
+      return 12;
     case NeuTextSize.light_14:
+    case NeuTextSize.bold_14:
       return 14;
     case NeuTextSize.light_16:
+    case NeuTextSize.bold_16:
       return 16;
     case NeuTextSize.light_18:
     case NeuTextSize.bold_18:
       return 18;
     case NeuTextSize.bold_20:
       return 20;
+    case NeuTextSize.bold_22:
+      return 22;
     case NeuTextSize.bold_25:
       return 25;
   }
@@ -58,12 +75,16 @@ double getSizeFrom(NeuTextSize neuTextSize) {
 
 FontWeight getFontWeight(NeuTextSize neuTextSize) {
   switch (neuTextSize) {
+    case NeuTextSize.light_12:
     case NeuTextSize.light_14:
     case NeuTextSize.light_16:
     case NeuTextSize.light_18:
       return FontWeight.w600;
+    case NeuTextSize.bold_14:
+    case NeuTextSize.bold_16:
     case NeuTextSize.bold_18:
     case NeuTextSize.bold_20:
+    case NeuTextSize.bold_22:
     case NeuTextSize.bold_25:
       return FontWeight.w700;
   }
