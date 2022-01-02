@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:fluttericon/font_awesome_icons.dart';
 import 'package:ppl_app/Models/MemberData.dart';
+import 'package:ppl_app/Models/TeamData.dart';
 import 'package:ppl_app/UserInterface/Pages/Team/MemberCard/MemberCard.dart';
 import 'package:ppl_app/UserInterface/Pages/Team/MemberCard/OwnerCard.dart';
 import 'package:ppl_app/UserInterface/Pages/Team/MemberEditPage/MemberEditPage.dart';
@@ -475,8 +476,21 @@ class _TeamEditPageState extends State<TeamEditPage> {
     ));
   }
 
-  _onCreatePressed() {
+  _onCreatePressed() async {
     // TODO: call the API.
+    List<MemberData> members = [
+      ownerInfo!,
+      ...sponsors,
+      ...coaches,
+      ...players,
+      ...managers,
+      ...staff,
+    ];
+    TeamData teamData = TeamData(
+        id: DateTime.now().microsecondsSinceEpoch,
+        name: name,
+        status: 1,
+        members: members);
   }
 
   Widget _memberTypeTitle(String title) {

@@ -34,21 +34,21 @@ class MemberData {
     status = memberData['status'];
   }
 
-  Map<String, dynamic> toJson(bool toIncludeId) {
+  Map<String, dynamic> toJson(bool forCreation) {
     Map<String, dynamic> memberData = {};
-    memberData['id'] = id;
+    if (!forCreation) {
+      memberData['id'] = id;
+      memberData['teamId'] = teamId;
+      memberData['status'] = status;
+    }
+
     memberData['age'] = age;
     memberData['firstName'] = firstName;
     memberData['lastName'] = lastName;
-
-    if (playerData != null) {
-      memberData['player'] = playerData!.toJson(toIncludeId);
-    }
-
     memberData['type'] = getMemberTypeAsString(type);
-    memberData['teamId'] = teamId;
-    memberData['status'] = status;
-
+    if (playerData != null) {
+      memberData['player'] = playerData!.toJson(forCreation);
+    }
     return memberData;
   }
 }

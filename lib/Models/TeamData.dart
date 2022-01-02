@@ -23,21 +23,21 @@ class TeamData {
     });
   }
 
-  Map<String, dynamic> toJson(bool toIncludeId) {
+  Map<String, dynamic> toJson(bool forCreation) {
     Map<String, dynamic> teamData = {};
-    if (toIncludeId) {
+    if (!forCreation) {
       teamData['id'] = id;
+      teamData['status'] = status;
     }
 
     List<Map<String, dynamic>> membersData = [];
     members.forEach((MemberData member) {
-      membersData.add(member.toJson(toIncludeId));
+      membersData.add(member.toJson(forCreation));
     });
 
     teamData['members'] = membersData;
 
     teamData['name'] = name;
-    teamData['status'] = status;
 
     return teamData;
   }
