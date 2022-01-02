@@ -41,7 +41,7 @@ class TeamsUtils {
           'image',
           imgFile.readAsBytes().asStream(),
           imgLen,
-          filename: imgFile.path.split("/").last,
+          filename: imgFile.name,
         ));
       }
 

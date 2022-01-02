@@ -11,7 +11,6 @@ class ImageUtils {
         return null;
       }
 
-      // print(await image.readAsBytes());
       return image;
     } catch (err) {
       print(err);
