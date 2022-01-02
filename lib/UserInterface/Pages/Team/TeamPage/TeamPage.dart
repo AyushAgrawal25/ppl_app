@@ -200,15 +200,17 @@ class _TeamPageState extends State<TeamPage> {
                                 children: players.map((playerData) {
                                   return MemberCard(
                                     data: playerData,
-                                    onPressed: () {
-                                      Navigator.of(context)
-                                          .push(MaterialPageRoute(
-                                        builder: (context) {
-                                          return PlayerPage(
-                                              memberData: playerData);
-                                        },
-                                      ));
-                                    },
+                                    onPressed: (playerData.playerData == null)
+                                        ? null
+                                        : () {
+                                            Navigator.of(context)
+                                                .push(MaterialPageRoute(
+                                              builder: (context) {
+                                                return PlayerPage(
+                                                    memberData: playerData);
+                                              },
+                                            ));
+                                          },
                                   );
                                 }).toList(),
                               ),
