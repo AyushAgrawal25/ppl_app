@@ -5,6 +5,7 @@ import 'package:ppl_app/Models/MemberData.dart';
 import 'package:ppl_app/Models/TeamData.dart';
 
 import 'package:http/http.dart' as http;
+import 'package:ppl_app/Utils/ToastUtils.dart';
 import 'package:ppl_app/constants.dart';
 
 class TeamsUtils {
@@ -28,8 +29,7 @@ class TeamsUtils {
     }
   }
 
-  Future<TeamCreationStatus> createTeam(
-      TeamData teamData, File? imgFile) async {
+  Future<TeamData?> createTeam(TeamData teamData, File? imgFile) async {
     try {
       http.MultipartRequest request =
           http.MultipartRequest('POST', Uri.parse(API_URL + "/teams/create"));
@@ -47,22 +47,28 @@ class TeamsUtils {
       http.StreamedResponse response = await request.send();
 
       // For Response Body.
-      print(await response.stream.bytesToString());
+      String respStr = await response.stream.bytesToString();
+      print(respStr);
 
       if (response.statusCode == 201) {
-        return TeamCreationStatus.created;
-      } else if (response.statusCode == 205) {
-        return TeamCreationStatus.memberAdditionFailed;
+        ToastUtils.showMessage("Team Created Successfully");
+        Map respBody = json.decode(respStr);
+
+        TeamData teamData = TeamData.fromJson(respBody['team']);
+        return teamData;
+      } else if (response.statusCode == 400) {
+        ToastUtils.showMessage("Team Creation Failed");
       }
 
-      return TeamCreationStatus.failed;
+      return null;
     } catch (err) {
       print(err);
-      return TeamCreationStatus.failed;
+      ToastUtils.showMessage("Team Creation Failed");
+      return null;
     }
   }
 
-  Future<MemberAdditionStatus> addMember(
+  Future<TeamData?> addMember(
       {required MemberData memberData, required int teamId}) async {
     try {
       Map<String, dynamic> reqBody = {
@@ -77,16 +83,16 @@ class TeamsUtils {
 
       // print(response.body);
       if (response.statusCode == 201) {
-        return MemberAdditionStatus.added;
+        Map respBody = json.decode(response.body);
+        return TeamData.fromJson(respBody['team']);
       }
-      return MemberAdditionStatus.failed;
+
+      return null;
     } catch (err) {
       print(err);
-      return MemberAdditionStatus.failed;
+      return null;
     }
   }
 }
-
-enum TeamCreationStatus { created, memberAdditionFailed, failed }
 
 enum MemberAdditionStatus { added, failed }

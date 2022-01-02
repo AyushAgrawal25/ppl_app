@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:fluttericon/font_awesome_icons.dart';
+import 'package:ppl_app/Models/AppState.dart';
 import 'package:ppl_app/Models/MemberData.dart';
 import 'package:ppl_app/Models/TeamData.dart';
 import 'package:ppl_app/UserInterface/Pages/Team/MemberCard/MemberCard.dart';
@@ -21,11 +22,9 @@ import 'package:ppl_app/UserInterface/Widgets/NeuWidgets/NeuText/NeuText.dart';
 import 'package:ppl_app/Utils/ImageUtils.dart';
 import 'package:ppl_app/Utils/TeamsUtils.dart';
 import 'package:ppl_app/Utils/ToastUtils.dart';
+import 'package:provider/provider.dart';
 
 class TeamEditPage extends StatefulWidget {
-  Future<dynamic> Function() onTeamCreate;
-  TeamEditPage({required this.onTeamCreate});
-
   @override
   _TeamEditPageState createState() => _TeamEditPageState();
 }
@@ -497,33 +496,14 @@ class _TeamEditPageState extends State<TeamEditPage> {
     setState(() {
       isLoading = true;
     });
-    TeamCreationStatus teamCreationStatus =
-        await TeamsUtils().createTeam(teamData, imgFile);
-
-    switch (teamCreationStatus) {
-      case TeamCreationStatus.created:
-        {
-          await widget.onTeamCreate();
-          Navigator.of(context).pop();
-          ToastUtils.showMessage("Team Created Successfully");
-        }
-        break;
-      case TeamCreationStatus.memberAdditionFailed:
-        {
-          await widget.onTeamCreate();
-          Navigator.of(context).pop();
-          ToastUtils.showMessage(
-              "Team Created Successfully but Member Creation Failed.");
-        }
-        break;
-      case TeamCreationStatus.failed:
-        {
-          Navigator.of(context).pop();
-          ToastUtils.showMessage("Team Creation Failed!");
-        }
-        break;
+    TeamData? newTeamData = await TeamsUtils().createTeam(teamData, imgFile);
+    if (newTeamData != null) {
+      print(newTeamData.toJson(false));
+      AppState appState = Provider.of<AppState>(context, listen: false);
+      appState.addTeam([newTeamData]);
     }
 
+    Navigator.of(context).pop();
     setState(() {
       isLoading = false;
     });

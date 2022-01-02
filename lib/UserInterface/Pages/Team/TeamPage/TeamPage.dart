@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttericon/font_awesome_icons.dart';
+import 'package:ppl_app/Models/AppState.dart';
 import 'package:ppl_app/Models/MemberData.dart';
 import 'package:ppl_app/Models/TeamData.dart';
 import 'package:ppl_app/UserInterface/Pages/Team/MemberCard/MemberCard.dart';
@@ -16,11 +17,11 @@ import 'package:ppl_app/UserInterface/Widgets/NeuWidgets/NeuText/NeuText.dart';
 import 'package:ppl_app/Utils/TeamsUtils.dart';
 import 'package:ppl_app/Utils/ToastUtils.dart';
 import 'package:ppl_app/constants.dart';
+import 'package:provider/provider.dart';
 
 class TeamPage extends StatefulWidget {
-  final TeamData data;
-  final Function(TeamData) onTeamUpdate;
-  TeamPage({required this.data, required this.onTeamUpdate});
+  final int teamId;
+  TeamPage({required this.teamId});
 
   @override
   _TeamPageState createState() => _TeamPageState();
@@ -28,6 +29,12 @@ class TeamPage extends StatefulWidget {
 
 class _TeamPageState extends State<TeamPage> {
   bool isLoading = false;
+  late AppState appState;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +45,12 @@ class _TeamPageState extends State<TeamPage> {
     List<MemberData> managers = [];
     List<MemberData> staff = [];
 
-    widget.data.members.forEach((member) {
+    AppState appStateListen = Provider.of<AppState>(context, listen: true);
+    TeamData data = appStateListen.teams[widget.teamId]!;
+
+    print("Updating.... From Team Page.");
+
+    data.members.forEach((member) {
       switch (member.type) {
         case MemberType.owner:
           ownerInfo = member;
@@ -79,7 +91,7 @@ class _TeamPageState extends State<TeamPage> {
                       Container(
                         alignment: Alignment.center,
                         child: NeuText(
-                          text: widget.data.name,
+                          text: data.name,
                           color: AppColorScheme.darkDetailColor,
                           textSize: NeuTextSize.bold_25,
                         ),
@@ -90,10 +102,10 @@ class _TeamPageState extends State<TeamPage> {
                       ),
 
                       // logo.
-                      (widget.data.logoFile != null)
+                      (data.logoFile != null)
                           ? Container(
                               child: DisplayPicture(
-                                imgUrl: LOGO_URL + "/" + widget.data.logoFile!,
+                                imgUrl: LOGO_URL + "/" + data.logoFile!,
                                 isEditable: false,
                                 height:
                                     MediaQuery.of(context).size.width * 0.75,
@@ -385,31 +397,16 @@ class _TeamPageState extends State<TeamPage> {
       isLoading = true;
     });
 
-    MemberAdditionStatus additionStatus = await TeamsUtils()
-        .addMember(memberData: memberData, teamId: widget.data.id);
+    TeamData? newTeamData = await TeamsUtils()
+        .addMember(memberData: memberData, teamId: widget.teamId);
 
-    switch (additionStatus) {
-      case MemberAdditionStatus.added:
-        {
-          List<TeamData> allTeams = await TeamsUtils().getTeams();
-          TeamData newTeamData = widget.data;
-          allTeams.forEach((teamData) {
-            if (teamData.id == newTeamData.id) {
-              newTeamData = teamData;
-            }
-          });
-
-          widget.onTeamUpdate(newTeamData);
-          ToastUtils.showMessage("Member Added");
-        }
-        break;
-      case MemberAdditionStatus.failed:
-        {
-          ToastUtils.showMessage("Member Failed");
-        }
-        break;
+    if (newTeamData != null) {
+      AppState appState = Provider.of<AppState>(context, listen: false);
+      appState.updateTeam(newTeamData);
+      ToastUtils.showMessage("Member Added");
+    } else {
+      ToastUtils.showMessage("Member Failed");
     }
-
     setState(() {
       isLoading = false;
     });

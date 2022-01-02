@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttericon/font_awesome_icons.dart';
+import 'package:ppl_app/Models/AppState.dart';
 import 'package:ppl_app/Models/TeamData.dart';
 import 'package:ppl_app/UserInterface/Pages/Team/TeamCard/TeamCard.dart';
 import 'package:ppl_app/UserInterface/Pages/Team/TeamEditPage/TeamEditPage.dart';
@@ -9,6 +10,7 @@ import 'package:ppl_app/UserInterface/Widgets/LoaderPage.dart';
 import 'package:ppl_app/UserInterface/Widgets/NeuWidgets/NeuAppBar/NeuAppBar.dart';
 import 'package:ppl_app/UserInterface/Widgets/NeuWidgets/NeuFab/NeuFAB.dart';
 import 'package:ppl_app/Utils/TeamsUtils.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -19,41 +21,34 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   bool isLoading = false;
-  List<TeamData> teams = [];
+
+  late AppState appState;
 
   @override
   void initState() {
     super.initState();
     initApp();
+    appState = Provider.of<AppState>(context, listen: false);
   }
 
-  //TODO: Add This to provider as well.
-  Future initApp() async {
+  initApp() async {
     setState(() {
       isLoading = true;
     });
 
-    teams = await TeamsUtils().getTeams();
+    List<TeamData> teams = await TeamsUtils().getTeams();
+    appState.addTeam(teams);
 
     setState(() {
       isLoading = false;
     });
   }
 
-  // TODO: Remove this add this to provider.
-  onTeamUpdate(TeamData teamData) {
-    setState(() {
-      for (int i = 0; i < teams.length; i++) {
-        if (teams[i].id == teamData.id) {
-          teams[i] = teamData;
-          break;
-        }
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    AppState appStateListen = Provider.of<AppState>(context, listen: true);
+    List<TeamData> teams = appStateListen.getTeams();
+    print("Updating.... From Home");
     return Container(
       child: Stack(
         children: [
@@ -69,7 +64,6 @@ class _HomePageState extends State<HomePage> {
                   itemBuilder: (context, index) {
                     return TeamCard(
                       data: teams[index],
-                      onTeamUpdate: onTeamUpdate,
                     );
                   },
                   itemCount: teams.length,
@@ -110,9 +104,7 @@ class _HomePageState extends State<HomePage> {
   _onAddTeamPressed() {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) {
-        return TeamEditPage(
-          onTeamCreate: initApp,
-        );
+        return TeamEditPage();
       },
     ));
   }

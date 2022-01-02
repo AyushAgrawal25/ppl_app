@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttericon/font_awesome_icons.dart';
+import 'package:ppl_app/Models/AppState.dart';
 import 'package:ppl_app/Models/MemberData.dart';
 import 'package:ppl_app/Models/TeamData.dart';
 import 'package:ppl_app/UserInterface/Pages/Team/TeamPage/TeamPage.dart';
@@ -9,11 +10,11 @@ import 'package:ppl_app/UserInterface/Widgets/DisplayPicture.dart';
 import 'package:ppl_app/UserInterface/Widgets/NeuWidgets/NeuContainer/NeuContainer.dart';
 import 'package:ppl_app/UserInterface/Widgets/NeuWidgets/NeuText/NeuText.dart';
 import 'package:ppl_app/constants.dart';
+import 'package:provider/provider.dart';
 
 class TeamCard extends StatefulWidget {
   final TeamData data;
-  final Function(TeamData) onTeamUpdate;
-  TeamCard({required this.data, required this.onTeamUpdate});
+  TeamCard({required this.data});
 
   @override
   _TeamCardState createState() => _TeamCardState();
@@ -22,6 +23,8 @@ class TeamCard extends StatefulWidget {
 class _TeamCardState extends State<TeamCard> {
   @override
   Widget build(BuildContext context) {
+    AppState appStateListen = Provider.of<AppState>(context, listen: true);
+
     return Container(
       margin: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
       child: GestureDetector(
@@ -30,8 +33,7 @@ class _TeamCardState extends State<TeamCard> {
           Navigator.of(context).push(MaterialPageRoute(
             builder: (context) {
               return TeamPage(
-                data: widget.data,
-                onTeamUpdate: widget.onTeamUpdate,
+                teamId: widget.data.id,
               );
             },
           ));
