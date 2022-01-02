@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ppl_app/Models/AppState.dart';
 import 'package:ppl_app/UserInterface/Pages/Home/HomePage.dart';
 import 'package:ppl_app/UserInterface/Themes/AppColorScheme.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(ChangeNotifierProvider(
+    create: (_) {
+      return AppState();
+    },
+    child: MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
