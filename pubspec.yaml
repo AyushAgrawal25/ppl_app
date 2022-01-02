@@ -41,6 +41,7 @@ dependencies:
   flutter_phosphor_icons: ^0.0.1+6
   fluttericon: ^2.0.0
   http: ^0.13.4
+  image_picker: ^0.8.4+4
 
 dev_dependencies:
   flutter_test:

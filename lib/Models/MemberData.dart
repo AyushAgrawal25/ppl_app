@@ -33,6 +33,24 @@ class MemberData {
     teamId = memberData['teamId'];
     status = memberData['status'];
   }
+
+  Map<String, dynamic> toJson(bool toIncludeId) {
+    Map<String, dynamic> memberData = {};
+    memberData['id'] = id;
+    memberData['age'] = age;
+    memberData['firstName'] = firstName;
+    memberData['lastName'] = lastName;
+
+    if (playerData != null) {
+      memberData['player'] = playerData!.toJson(toIncludeId);
+    }
+
+    memberData['type'] = getMemberTypeAsString(type);
+    memberData['teamId'] = teamId;
+    memberData['status'] = status;
+
+    return memberData;
+  }
 }
 
 enum MemberType {

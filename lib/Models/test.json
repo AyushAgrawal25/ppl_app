@@ -1,0 +1,35 @@
+{
+    "name": "Team1",
+    "members": [
+        {
+            "type": "owner",
+            "age": 24,
+            "firstName": "Jeff",
+            "lastName": "Bessos"
+        },
+        {
+            "type": "player",
+            "age": 24,
+            "firstName": "Virat",
+            "lastName": "Kohli"
+        },
+        {
+            "type": "coach",
+            "age": 24,
+            "firstName": "Coach",
+            "lastName": "Sir"
+        },
+        {
+            "type": "manager",
+            "age": 24,
+            "firstName": "Satya",
+            "lastName": "Nadela"
+        },
+        {
+            "type": "staff",
+            "age": 24,
+            "firstName": "Aman",
+            "lastName": "Singh"
+        }
+    ]
+}

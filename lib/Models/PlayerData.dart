@@ -32,6 +32,23 @@ class PlayerData {
     memberId = playerData['memberId'];
     status = playerData['status'];
   }
+
+  Map<String, dynamic> toJson(bool toIncludeId) {
+    Map<String, dynamic> playerData = {};
+    if (toIncludeId) {
+      playerData['id'] = id;
+    }
+    playerData['wickets'] = wickets;
+    playerData['speciality'] = getPlayerSpecialityAsString(speciality);
+    playerData['battingScore'] = battingScore;
+    playerData['bowlingScore'] = bowlingScore;
+    playerData['centuries'] = centuries;
+    playerData['matches'] = matches;
+    playerData['memberId'] = memberId;
+    playerData['status'] = status;
+
+    return playerData;
+  }
 }
 
 PlayerSpeciality getPlayerSpecialityFromString(String spec) {
