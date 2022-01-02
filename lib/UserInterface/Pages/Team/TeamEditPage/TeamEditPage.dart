@@ -1,7 +1,9 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:fluttericon/font_awesome_icons.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:ppl_app/Models/AppState.dart';
 import 'package:ppl_app/Models/MemberData.dart';
 import 'package:ppl_app/Models/TeamData.dart';
@@ -20,6 +22,7 @@ import 'package:ppl_app/UserInterface/Widgets/NeuWidgets/NeuFormField/NeuTextFor
 import 'package:ppl_app/UserInterface/Widgets/NeuWidgets/NeuFormField/NeuTextFormLabel.dart';
 import 'package:ppl_app/UserInterface/Widgets/NeuWidgets/NeuText/NeuText.dart';
 import 'package:ppl_app/Utils/ImageUtils.dart';
+import 'package:ppl_app/Utils/PlatformUtils.dart';
 import 'package:ppl_app/Utils/TeamsUtils.dart';
 import 'package:ppl_app/Utils/ToastUtils.dart';
 import 'package:provider/provider.dart';
@@ -36,7 +39,8 @@ class _TeamEditPageState extends State<TeamEditPage> {
   }
 
   bool isLoading = false;
-  File? imgFile;
+  XFile? imgFile;
+  Uint8List? imgBytes;
   String name = "";
   MemberData? ownerInfo;
   List<MemberData> sponsors = [];
@@ -45,9 +49,48 @@ class _TeamEditPageState extends State<TeamEditPage> {
   List<MemberData> managers = [];
   List<MemberData> staff = [];
 
+  void setImgBytes() async {
+    setState(() {
+      isLoading = true;
+    });
+    if (imgFile != null) {
+      imgBytes = await imgFile!.readAsBytes();
+    }
+    setState(() {
+      isLoading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     _checkValidity();
+
+    Widget _imageWidget = Container();
+    OSPlatformType osPlatformType = PlatformUtils().getOSPlatformType();
+    if (osPlatformType == OSPlatformType.web) {
+      _imageWidget = ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          child: (imgBytes == null)
+              ? LoaderPage()
+              : Image.memory(
+                  imgBytes!,
+                  fit: BoxFit.cover,
+                ),
+        ),
+      );
+    } else {
+      _imageWidget = ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          child: Image.file(
+            File(imgFile!.path),
+            fit: BoxFit.cover,
+          ),
+        ),
+      );
+    }
+
     return Container(
       child: Stack(
         children: [
@@ -71,11 +114,12 @@ class _TeamEditPageState extends State<TeamEditPage> {
                           borderRadius: BorderRadius.circular(25),
                           color: AppColorScheme.bgColor,
                           onPressed: () async {
-                            File? file = await ImageUtils().getImage();
+                            XFile? file = await ImageUtils().getImage();
                             if (file != null) {
                               setState(() {
                                 imgFile = file;
                               });
+                              setImgBytes();
                             }
                           },
                           child: Container(
@@ -83,6 +127,7 @@ class _TeamEditPageState extends State<TeamEditPage> {
                             width: MediaQuery.of(context).size.width * 0.65,
                             padding: EdgeInsets.all(10),
                             child: (imgFile == null)
+                                // (true)
                                 ? Container(
                                     alignment: Alignment.center,
                                     child: Column(
@@ -104,15 +149,7 @@ class _TeamEditPageState extends State<TeamEditPage> {
                                       ],
                                     ),
                                   )
-                                : ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: Container(
-                                      child: Image.file(
-                                        imgFile!,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  ),
+                                : _imageWidget,
                           ),
                         ),
                       ),
