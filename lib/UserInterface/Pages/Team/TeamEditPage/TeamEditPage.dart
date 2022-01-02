@@ -19,9 +19,12 @@ import 'package:ppl_app/UserInterface/Widgets/NeuWidgets/NeuFormField/NeuTextFor
 import 'package:ppl_app/UserInterface/Widgets/NeuWidgets/NeuFormField/NeuTextFormLabel.dart';
 import 'package:ppl_app/UserInterface/Widgets/NeuWidgets/NeuText/NeuText.dart';
 import 'package:ppl_app/Utils/ImageUtils.dart';
+import 'package:ppl_app/Utils/TeamsUtils.dart';
+import 'package:ppl_app/Utils/ToastUtils.dart';
 
 class TeamEditPage extends StatefulWidget {
-  const TeamEditPage({Key? key}) : super(key: key);
+  Future<dynamic> Function() onTeamCreate;
+  TeamEditPage({required this.onTeamCreate});
 
   @override
   _TeamEditPageState createState() => _TeamEditPageState();
@@ -477,7 +480,6 @@ class _TeamEditPageState extends State<TeamEditPage> {
   }
 
   _onCreatePressed() async {
-    // TODO: call the API.
     List<MemberData> members = [
       ownerInfo!,
       ...sponsors,
@@ -491,6 +493,40 @@ class _TeamEditPageState extends State<TeamEditPage> {
         name: name,
         status: 1,
         members: members);
+
+    setState(() {
+      isLoading = true;
+    });
+    TeamCreationStatus teamCreationStatus =
+        await TeamsUtils().createTeam(teamData, imgFile);
+
+    switch (teamCreationStatus) {
+      case TeamCreationStatus.created:
+        {
+          await widget.onTeamCreate();
+          Navigator.of(context).pop();
+          ToastUtils.showMessage("Team Created Successfully");
+        }
+        break;
+      case TeamCreationStatus.memberAdditionFailed:
+        {
+          await widget.onTeamCreate();
+          Navigator.of(context).pop();
+          ToastUtils.showMessage(
+              "Team Created Successfully but Member Creation Failed.");
+        }
+        break;
+      case TeamCreationStatus.failed:
+        {
+          Navigator.of(context).pop();
+          ToastUtils.showMessage("Team Creation Failed!");
+        }
+        break;
+    }
+
+    setState(() {
+      isLoading = false;
+    });
   }
 
   Widget _memberTypeTitle(String title) {

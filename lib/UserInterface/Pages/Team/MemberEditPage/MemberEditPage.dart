@@ -66,10 +66,14 @@ class _MemberEditPageState extends State<MemberEditPage> {
         isFormValid = false;
       }
 
-      if ((bowlingScore == null) || (bowlingScore! < 0)) {
+      if ((bowlingScore == null) ||
+          (bowlingScore! < 0) ||
+          (bowlingScore! > 100)) {
         isFormValid = false;
       }
-      if ((battingScore == null) || (battingScore! < 0)) {
+      if ((battingScore == null) ||
+          (battingScore! < 0) ||
+          (battingScore! > 100)) {
         isFormValid = false;
       }
 
@@ -264,9 +268,21 @@ class _MemberEditPageState extends State<MemberEditPage> {
                                   ),
 
                                   // Batting Score
-                                  NeuTextFormLabel(
-                                    title: "Batting Score.",
-                                    icon: Icons.circle,
+                                  Container(
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        NeuTextFormLabel(
+                                          title: "Batting Score.",
+                                          icon: Icons.circle,
+                                        ),
+                                        NeuText(
+                                          text: "0 to 100",
+                                          textSize: NeuTextSize.light_12,
+                                        )
+                                      ],
+                                    ),
                                   ),
                                   Container(
                                     child: NeuTextFormField(
@@ -286,9 +302,21 @@ class _MemberEditPageState extends State<MemberEditPage> {
                                   ),
 
                                   // Bowling Score
-                                  NeuTextFormLabel(
-                                    title: "Bowling Score.",
-                                    icon: Icons.circle,
+                                  Container(
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        NeuTextFormLabel(
+                                          title: "Bowling Score.",
+                                          icon: Icons.circle,
+                                        ),
+                                        NeuText(
+                                          text: "0 to 100",
+                                          textSize: NeuTextSize.light_12,
+                                        )
+                                      ],
+                                    ),
                                   ),
                                   Container(
                                     child: NeuTextFormField(

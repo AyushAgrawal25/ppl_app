@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttericon/font_awesome_icons.dart';
 import 'package:ppl_app/Models/MemberData.dart';
 import 'package:ppl_app/Models/TeamData.dart';
 import 'package:ppl_app/UserInterface/Pages/Team/TeamPage/TeamPage.dart';
@@ -7,10 +8,12 @@ import 'package:ppl_app/UserInterface/Themes/AppColorScheme.dart';
 import 'package:ppl_app/UserInterface/Widgets/DisplayPicture.dart';
 import 'package:ppl_app/UserInterface/Widgets/NeuWidgets/NeuContainer/NeuContainer.dart';
 import 'package:ppl_app/UserInterface/Widgets/NeuWidgets/NeuText/NeuText.dart';
+import 'package:ppl_app/constants.dart';
 
 class TeamCard extends StatefulWidget {
   final TeamData data;
-  TeamCard({required this.data});
+  final Function(TeamData) onTeamUpdate;
+  TeamCard({required this.data, required this.onTeamUpdate});
 
   @override
   _TeamCardState createState() => _TeamCardState();
@@ -26,7 +29,10 @@ class _TeamCardState extends State<TeamCard> {
           SystemSound.play(SystemSoundType.click);
           Navigator.of(context).push(MaterialPageRoute(
             builder: (context) {
-              return TeamPage(data: widget.data);
+              return TeamPage(
+                data: widget.data,
+                onTeamUpdate: widget.onTeamUpdate,
+              );
             },
           ));
         },
@@ -36,19 +42,29 @@ class _TeamCardState extends State<TeamCard> {
             child: Row(
               children: [
                 // Team Logo.
-                // TODO: create logo link and others as well.
-                Container(
-                  child: DisplayPicture(
-                    imgUrl:
-                        "https://cdn6.f-cdn.com/contestentries/1268957/26769824/5aa9ca94e532c_thumb900.jpg",
-                    isEditable: false,
-                    height: 90,
-                    width: 90,
-                    isDeletable: false,
-                    contPadding: 5,
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                ),
+                (widget.data.logoFile != null)
+                    ? Container(
+                        child: DisplayPicture(
+                          imgUrl: LOGO_URL + "/" + widget.data.logoFile!,
+                          isEditable: false,
+                          height: 90,
+                          width: 90,
+                          isDeletable: false,
+                          contPadding: 5,
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      )
+                    : NeuContainer(
+                        child: Container(
+                          height: 90,
+                          width: 90,
+                          child: Icon(
+                            FontAwesome.file_image,
+                            size: 55,
+                            color: AppColorScheme.lightDividerColor,
+                          ),
+                        ),
+                      ),
 
                 SizedBox(
                   width: 20,

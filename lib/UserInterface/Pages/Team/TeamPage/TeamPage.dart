@@ -1,23 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:fluttericon/font_awesome_icons.dart';
 import 'package:ppl_app/Models/MemberData.dart';
 import 'package:ppl_app/Models/TeamData.dart';
 import 'package:ppl_app/UserInterface/Pages/Team/MemberCard/MemberCard.dart';
 import 'package:ppl_app/UserInterface/Pages/Team/MemberCard/OwnerCard.dart';
+import 'package:ppl_app/UserInterface/Pages/Team/MemberEditPage/MemberEditPage.dart';
 import 'package:ppl_app/UserInterface/Pages/Team/PlayerPage/PlayerPage.dart';
 import 'package:ppl_app/UserInterface/Themes/AppColorScheme.dart';
 import 'package:ppl_app/UserInterface/Widgets/DisplayPicture.dart';
+import 'package:ppl_app/UserInterface/Widgets/LoaderPage.dart';
 import 'package:ppl_app/UserInterface/Widgets/NeuWidgets/NeuAppBar/NeuAppBar.dart';
+import 'package:ppl_app/UserInterface/Widgets/NeuWidgets/NeuButton/NeuButton.dart';
+import 'package:ppl_app/UserInterface/Widgets/NeuWidgets/NeuContainer/NeuContainer.dart';
 import 'package:ppl_app/UserInterface/Widgets/NeuWidgets/NeuText/NeuText.dart';
+import 'package:ppl_app/Utils/TeamsUtils.dart';
+import 'package:ppl_app/Utils/ToastUtils.dart';
+import 'package:ppl_app/constants.dart';
 
 class TeamPage extends StatefulWidget {
   final TeamData data;
-  TeamPage({required this.data});
+  final Function(TeamData) onTeamUpdate;
+  TeamPage({required this.data, required this.onTeamUpdate});
 
   @override
   _TeamPageState createState() => _TeamPageState();
 }
 
 class _TeamPageState extends State<TeamPage> {
+  bool isLoading = false;
+
   @override
   Widget build(BuildContext context) {
     MemberData? ownerInfo;
@@ -79,18 +90,33 @@ class _TeamPageState extends State<TeamPage> {
                       ),
 
                       // logo.
-                      Container(
-                        child: DisplayPicture(
-                          imgUrl:
-                              "https://cdn6.f-cdn.com/contestentries/1268957/26769824/5aa9ca94e532c_thumb900.jpg",
-                          isEditable: false,
-                          height: MediaQuery.of(context).size.width * 0.75,
-                          width: MediaQuery.of(context).size.width * 0.75,
-                          isDeletable: false,
-                          contPadding: 20,
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                      ),
+                      (widget.data.logoFile != null)
+                          ? Container(
+                              child: DisplayPicture(
+                                imgUrl: LOGO_URL + "/" + widget.data.logoFile!,
+                                isEditable: false,
+                                height:
+                                    MediaQuery.of(context).size.width * 0.75,
+                                width: MediaQuery.of(context).size.width * 0.75,
+                                isDeletable: false,
+                                contPadding: 20,
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                            )
+                          : NeuContainer(
+                              child: Container(
+                                height:
+                                    MediaQuery.of(context).size.width * 0.75,
+                                width: MediaQuery.of(context).size.width * 0.75,
+                                child: Icon(
+                                  FontAwesome.file_image,
+                                  size: (MediaQuery.of(context).size.width *
+                                          0.75) -
+                                      100,
+                                  color: AppColorScheme.lightDividerColor,
+                                ),
+                              ),
+                            ),
 
                       SizedBox(
                         height: 20,
@@ -120,29 +146,24 @@ class _TeamPageState extends State<TeamPage> {
                         height: 5,
                       ),
 
-                      (sponsors.length > 0)
-                          ? Container(
-                              alignment: Alignment.centerLeft,
-                              child: Wrap(
-                                runAlignment: WrapAlignment.start,
-                                crossAxisAlignment: WrapCrossAlignment.start,
-                                alignment: WrapAlignment.start,
-                                children: sponsors.map((sponsorData) {
-                                  return MemberCard(
-                                    data: sponsorData,
-                                    toShowAge: false,
-                                  );
-                                }).toList(),
-                              ),
-                            )
-                          : Container(
-                              padding: EdgeInsets.only(top: 10),
-                              child: NeuText(
-                                text: "No Sponsors.",
-                                textSize: NeuTextSize.light_16,
-                                color: AppColorScheme.lightDetailColor,
-                              ),
-                            ),
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        child: Wrap(
+                          runAlignment: WrapAlignment.start,
+                          crossAxisAlignment: WrapCrossAlignment.start,
+                          alignment: WrapAlignment.start,
+                          children: [
+                            ...sponsors.map((sponsorData) {
+                              return MemberCard(
+                                data: sponsorData,
+                                toShowAge: false,
+                              );
+                            }).toList(),
+                            _memberAddButton(
+                                title: "Add", onPressed: _onAddSponsorPressed)
+                          ],
+                        ),
+                      ),
 
                       SizedBox(
                         height: 20,
@@ -155,30 +176,24 @@ class _TeamPageState extends State<TeamPage> {
                         height: 5,
                       ),
 
-                      (coaches.length > 0)
-                          ? Container(
-                              alignment: Alignment.centerLeft,
-                              child: Wrap(
-                                runAlignment: WrapAlignment.start,
-                                crossAxisAlignment: WrapCrossAlignment.start,
-                                alignment: WrapAlignment.start,
-                                children: coaches.map((coachData) {
-                                  return MemberCard(
-                                    data: coachData,
-                                    toShowAge: false,
-                                  );
-                                }).toList(),
-                              ),
-                            )
-                          : Container(
-                              padding: EdgeInsets.only(top: 10),
-                              child: NeuText(
-                                text: "No Coaches.",
-                                textSize: NeuTextSize.light_16,
-                                color: AppColorScheme.lightDetailColor,
-                              ),
-                            ),
-
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        child: Wrap(
+                          runAlignment: WrapAlignment.start,
+                          crossAxisAlignment: WrapCrossAlignment.start,
+                          alignment: WrapAlignment.start,
+                          children: [
+                            ...coaches.map((coachData) {
+                              return MemberCard(
+                                data: coachData,
+                                toShowAge: false,
+                              );
+                            }).toList(),
+                            _memberAddButton(
+                                title: "Add", onPressed: _onAddCoachPressed)
+                          ],
+                        ),
+                      ),
                       SizedBox(
                         height: 20,
                       ),
@@ -190,39 +205,34 @@ class _TeamPageState extends State<TeamPage> {
                         height: 5,
                       ),
 
-                      (players.length > 0)
-                          ? Container(
-                              alignment: Alignment.centerLeft,
-                              child: Wrap(
-                                runAlignment: WrapAlignment.start,
-                                crossAxisAlignment: WrapCrossAlignment.start,
-                                alignment: WrapAlignment.start,
-                                children: players.map((playerData) {
-                                  return MemberCard(
-                                    data: playerData,
-                                    onPressed: (playerData.playerData == null)
-                                        ? null
-                                        : () {
-                                            Navigator.of(context)
-                                                .push(MaterialPageRoute(
-                                              builder: (context) {
-                                                return PlayerPage(
-                                                    memberData: playerData);
-                                              },
-                                            ));
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        child: Wrap(
+                          runAlignment: WrapAlignment.start,
+                          crossAxisAlignment: WrapCrossAlignment.start,
+                          alignment: WrapAlignment.start,
+                          children: [
+                            ...players.map((playerData) {
+                              return MemberCard(
+                                data: playerData,
+                                onPressed: (playerData.playerData == null)
+                                    ? null
+                                    : () {
+                                        Navigator.of(context)
+                                            .push(MaterialPageRoute(
+                                          builder: (context) {
+                                            return PlayerPage(
+                                                memberData: playerData);
                                           },
-                                  );
-                                }).toList(),
-                              ),
-                            )
-                          : Container(
-                              padding: EdgeInsets.only(top: 10),
-                              child: NeuText(
-                                text: "No Players.",
-                                textSize: NeuTextSize.light_16,
-                                color: AppColorScheme.lightDetailColor,
-                              ),
-                            ),
+                                        ));
+                                      },
+                              );
+                            }).toList(),
+                            _memberAddButton(
+                                title: "Add", onPressed: _onAddPlayerPressed)
+                          ],
+                        ),
+                      ),
 
                       SizedBox(
                         height: 20,
@@ -235,29 +245,24 @@ class _TeamPageState extends State<TeamPage> {
                         height: 5,
                       ),
 
-                      (managers.length > 0)
-                          ? Container(
-                              alignment: Alignment.centerLeft,
-                              child: Wrap(
-                                runAlignment: WrapAlignment.start,
-                                crossAxisAlignment: WrapCrossAlignment.start,
-                                alignment: WrapAlignment.start,
-                                children: managers.map((managerData) {
-                                  return MemberCard(
-                                    data: managerData,
-                                    toShowAge: false,
-                                  );
-                                }).toList(),
-                              ),
-                            )
-                          : Container(
-                              padding: EdgeInsets.only(top: 10),
-                              child: NeuText(
-                                text: "No Sponsors.",
-                                textSize: NeuTextSize.light_16,
-                                color: AppColorScheme.lightDetailColor,
-                              ),
-                            ),
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        child: Wrap(
+                          runAlignment: WrapAlignment.start,
+                          crossAxisAlignment: WrapCrossAlignment.start,
+                          alignment: WrapAlignment.start,
+                          children: [
+                            ...managers.map((managerData) {
+                              return MemberCard(
+                                data: managerData,
+                                toShowAge: false,
+                              );
+                            }).toList(),
+                            _memberAddButton(
+                                title: "Add", onPressed: _onAddManagerPressed)
+                          ],
+                        ),
+                      ),
 
                       SizedBox(
                         height: 20,
@@ -270,40 +275,176 @@ class _TeamPageState extends State<TeamPage> {
                         height: 5,
                       ),
 
-                      (staff.length > 0)
-                          ? Container(
-                              alignment: Alignment.centerLeft,
-                              child: Wrap(
-                                runAlignment: WrapAlignment.start,
-                                crossAxisAlignment: WrapCrossAlignment.start,
-                                alignment: WrapAlignment.start,
-                                children: staff.map((staffData) {
-                                  return MemberCard(
-                                    data: staffData,
-                                    toShowAge: false,
-                                  );
-                                }).toList(),
-                              ),
-                            )
-                          : Container(
-                              padding: EdgeInsets.only(top: 10),
-                              child: NeuText(
-                                text: "No Staff Members.",
-                                textSize: NeuTextSize.light_16,
-                                color: AppColorScheme.lightDetailColor,
-                              ),
-                            ),
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        child: Wrap(
+                          runAlignment: WrapAlignment.start,
+                          crossAxisAlignment: WrapCrossAlignment.start,
+                          alignment: WrapAlignment.start,
+                          children: [
+                            ...staff.map((staffData) {
+                              return MemberCard(
+                                data: staffData,
+                                toShowAge: false,
+                              );
+                            }).toList(),
+                            _memberAddButton(
+                                title: "Add", onPressed: _onAddStaffPressed)
+                          ],
+                        ),
+                      ),
 
                       SizedBox(
-                        height: 30,
+                        height: 40,
                       ),
                     ],
                   ),
                 ),
               ),
             ),
-          )
+          ),
+
+          (isLoading) ? LoaderPage() : Container()
         ],
+      ),
+    );
+  }
+
+  _onAddSponsorPressed() {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) {
+        return MemberEditPage(
+          teamId: DateTime.now().microsecondsSinceEpoch,
+          type: MemberType.sponsor,
+          onAddPressed: (member) {
+            _onMemberAddition(member);
+          },
+        );
+      },
+    ));
+  }
+
+  _onAddCoachPressed() {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) {
+        return MemberEditPage(
+          teamId: DateTime.now().microsecondsSinceEpoch,
+          type: MemberType.coach,
+          onAddPressed: (member) {
+            _onMemberAddition(member);
+          },
+        );
+      },
+    ));
+  }
+
+  _onAddPlayerPressed() {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) {
+        return MemberEditPage(
+          teamId: DateTime.now().microsecondsSinceEpoch,
+          type: MemberType.player,
+          onAddPressed: (member) {
+            _onMemberAddition(member);
+          },
+        );
+      },
+    ));
+  }
+
+  _onAddManagerPressed() {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) {
+        return MemberEditPage(
+          teamId: DateTime.now().microsecondsSinceEpoch,
+          type: MemberType.manager,
+          onAddPressed: (member) {
+            _onMemberAddition(member);
+          },
+        );
+      },
+    ));
+  }
+
+  _onAddStaffPressed() {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) {
+        return MemberEditPage(
+          teamId: DateTime.now().microsecondsSinceEpoch,
+          type: MemberType.staff,
+          onAddPressed: (member) {
+            _onMemberAddition(member);
+          },
+        );
+      },
+    ));
+  }
+
+  _onMemberAddition(MemberData memberData) async {
+    setState(() {
+      isLoading = true;
+    });
+
+    MemberAdditionStatus additionStatus = await TeamsUtils()
+        .addMember(memberData: memberData, teamId: widget.data.id);
+
+    switch (additionStatus) {
+      case MemberAdditionStatus.added:
+        {
+          List<TeamData> allTeams = await TeamsUtils().getTeams();
+          TeamData newTeamData = widget.data;
+          allTeams.forEach((teamData) {
+            if (teamData.id == newTeamData.id) {
+              newTeamData = teamData;
+            }
+          });
+
+          widget.onTeamUpdate(newTeamData);
+          ToastUtils.showMessage("Member Added");
+        }
+        break;
+      case MemberAdditionStatus.failed:
+        {
+          ToastUtils.showMessage("Member Failed");
+        }
+        break;
+    }
+
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  Widget _memberAddButton(
+      {required String title, required Function onPressed}) {
+    return Container(
+      width: (MediaQuery.of(context).size.width - 60) / 3,
+      padding: EdgeInsets.symmetric(horizontal: 5, vertical: 10),
+      child: NeuButton(
+        color: AppColorScheme.bgColor,
+        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+        borderRadius: BorderRadius.circular(10),
+        onPressed: onPressed,
+        child: Container(
+          alignment: Alignment.center,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.add,
+                size: 40,
+                color: AppColorScheme.darkDetailColor,
+              ),
+              Container(
+                child: NeuText(
+                  text: title,
+                  color: AppColorScheme.lightDetailColor,
+                  textSize: NeuTextSize.light_12,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

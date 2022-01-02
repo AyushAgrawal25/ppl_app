@@ -27,7 +27,8 @@ class _HomePageState extends State<HomePage> {
     initApp();
   }
 
-  void initApp() async {
+  //TODO: Add This to provider as well.
+  Future initApp() async {
     setState(() {
       isLoading = true;
     });
@@ -36,6 +37,18 @@ class _HomePageState extends State<HomePage> {
 
     setState(() {
       isLoading = false;
+    });
+  }
+
+  // TODO: Remove this add this to provider.
+  onTeamUpdate(TeamData teamData) {
+    setState(() {
+      for (int i = 0; i < teams.length; i++) {
+        if (teams[i].id == teamData.id) {
+          teams[i] = teamData;
+          break;
+        }
+      }
     });
   }
 
@@ -56,6 +69,7 @@ class _HomePageState extends State<HomePage> {
                   itemBuilder: (context, index) {
                     return TeamCard(
                       data: teams[index],
+                      onTeamUpdate: onTeamUpdate,
                     );
                   },
                   itemCount: teams.length,
@@ -96,7 +110,9 @@ class _HomePageState extends State<HomePage> {
   _onAddTeamPressed() {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) {
-        return TeamEditPage();
+        return TeamEditPage(
+          onTeamCreate: initApp,
+        );
       },
     ));
   }
