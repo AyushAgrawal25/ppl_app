@@ -505,8 +505,8 @@ class _TeamPageState extends State<TeamPage> {
               height: contSize,
               width: contSize,
               child: Icon(
-                FontAwesome.file_image,
-                size: imgSize,
+                FontAwesome.users,
+                size: imgSize * 0.75,
                 color: AppColorScheme.lightDividerColor,
               ),
             ),

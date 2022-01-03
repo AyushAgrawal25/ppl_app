@@ -285,6 +285,18 @@ class _TeamEditPageState extends State<TeamEditPage> {
             SizedBox(
               height: 20,
             ),
+            // Player Info.
+            _memberTypeTitle("Players"),
+
+            SizedBox(
+              height: 5,
+            ),
+
+            _memberCards(players, _onAddPlayerPressed),
+
+            SizedBox(
+              height: 20,
+            ),
 
             // Sponsor Info.
             _memberTypeTitle("Sponsors"),
@@ -307,19 +319,6 @@ class _TeamEditPageState extends State<TeamEditPage> {
             ),
 
             _memberCards(coaches, _onAddCoachPressed),
-
-            SizedBox(
-              height: 20,
-            ),
-
-            // Player Info.
-            _memberTypeTitle("Players"),
-
-            SizedBox(
-              height: 5,
-            ),
-
-            _memberCards(players, _onAddPlayerPressed),
 
             SizedBox(
               height: 20,
@@ -476,6 +475,18 @@ class _TeamEditPageState extends State<TeamEditPage> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        // Player Info.
+                        _memberContainer([
+                          _memberTypeTitle("Players"),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          _memberCards(players, _onAddPlayerPressed),
+                          SizedBox(
+                            height: 20,
+                          ),
+                        ]),
+
                         // Sponsor Info.
                         _memberContainer([
                           _memberTypeTitle("Sponsors"),
@@ -495,18 +506,6 @@ class _TeamEditPageState extends State<TeamEditPage> {
                             height: 5,
                           ),
                           _memberCards(coaches, _onAddCoachPressed),
-                          SizedBox(
-                            height: 20,
-                          ),
-                        ]),
-
-                        // Player Info.
-                        _memberContainer([
-                          _memberTypeTitle("Players"),
-                          SizedBox(
-                            height: 5,
-                          ),
-                          _memberCards(players, _onAddPlayerPressed),
                           SizedBox(
                             height: 20,
                           ),
