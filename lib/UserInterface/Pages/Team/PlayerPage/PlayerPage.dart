@@ -83,7 +83,7 @@ class _PlayerPageState extends State<PlayerPage> {
               ),
 
               // Name.
-              _nameWidget(),
+              Container(alignment: Alignment.center, child: _nameWidget()),
 
               SizedBox(
                 height: 10,

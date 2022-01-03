@@ -547,28 +547,30 @@ class _TeamEditPageState extends State<TeamEditPage> {
   Widget _logoWidget({required double size}) {
     Widget _imageWidget = Container();
     OSPlatformType osPlatformType = PlatformUtils().getOSPlatformType();
-    if (osPlatformType == OSPlatformType.web) {
-      _imageWidget = ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: Container(
-          child: (imgBytes == null)
-              ? LoaderPage()
-              : Image.memory(
-                  imgBytes!,
-                  fit: BoxFit.cover,
-                ),
-        ),
-      );
-    } else {
-      _imageWidget = ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: Container(
-          child: Image.file(
-            File(imgFile!.path),
-            fit: BoxFit.cover,
+    if (imgFile != null) {
+      if (osPlatformType == OSPlatformType.web) {
+        _imageWidget = ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            child: (imgBytes == null)
+                ? LoaderPage()
+                : Image.memory(
+                    imgBytes!,
+                    fit: BoxFit.cover,
+                  ),
           ),
-        ),
-      );
+        );
+      } else {
+        _imageWidget = ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            child: Image.file(
+              File(imgFile!.path),
+              fit: BoxFit.cover,
+            ),
+          ),
+        );
+      }
     }
 
     return AspectRatio(
