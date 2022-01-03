@@ -1,16 +1,29 @@
 # ppl_app
 
-A new Flutter project.
+App for Team Management. Backend is already hosted.
 
 ## Getting Started
+> Runnig app in build mode.
+Clean the old build using
+```
+flutter clean
+```
 
-This project is a starting point for a Flutter application.
+> Install all the packages
+```
+flutter pub get
+```
+> First copy the device id.
+```
+flutter devices
+```
+> Running in development Mode.
+> Paste the device Id after -d.
+```
+flutter run -d BYS3Y19211004042
+```
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+> Creating Release APK.
+```
+flutter build apk
+```
