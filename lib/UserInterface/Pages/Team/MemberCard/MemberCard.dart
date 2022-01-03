@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ppl_app/Models/MemberData.dart';
@@ -22,7 +24,7 @@ class MemberCard extends StatelessWidget {
         }
       },
       child: Container(
-        width: (MediaQuery.of(context).size.width - 60) / 3,
+        width: min((MediaQuery.of(context).size.width - 60) / 3, 100),
         color: Colors.transparent,
         padding: EdgeInsets.symmetric(vertical: 10, horizontal: 5),
         child: Column(

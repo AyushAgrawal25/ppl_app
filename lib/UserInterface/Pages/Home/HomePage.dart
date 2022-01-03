@@ -48,7 +48,9 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     AppState appStateListen = Provider.of<AppState>(context, listen: true);
     List<TeamData> teams = appStateListen.getTeams();
-    print("Updating.... From Home");
+
+    List<Widget> cardRows = _getTeamCardRow(teams);
+
     return Container(
       child: Stack(
         children: [
@@ -60,13 +62,20 @@ class _HomePageState extends State<HomePage> {
                 title: "Your Teams",
               ),
               body: Container(
+                // child: ListView.builder(
+                //   itemBuilder: (context, index) {
+                //     return TeamCard(
+                //       data: teams[index],
+                //     );
+                //   },
+                //   itemCount: teams.length,
+                // ),
+
                 child: ListView.builder(
                   itemBuilder: (context, index) {
-                    return TeamCard(
-                      data: teams[index],
-                    );
+                    return cardRows[index];
                   },
-                  itemCount: teams.length,
+                  itemCount: cardRows.length,
                 ),
               ),
             ),
@@ -107,5 +116,34 @@ class _HomePageState extends State<HomePage> {
         return TeamEditPage();
       },
     ));
+  }
+
+  _getTeamCardRow(List<TeamData> teams) {
+    double scWidth = MediaQuery.of(context).size.width;
+    int cardCount = 1;
+    if ((scWidth > 500) && (scWidth < 1000)) {
+      cardCount = 2;
+    } else if (scWidth >= 1000) {
+      cardCount = 3;
+    }
+
+    double cardWidth = scWidth / cardCount;
+
+    List<Widget> cardRows = [];
+    for (int i = 0; i < teams.length; i += cardCount) {
+      List<Widget> currCards = [];
+      for (int j = i; (j < teams.length) && (j < i + cardCount); j++) {
+        currCards
+            .add(Container(width: cardWidth, child: TeamCard(data: teams[j])));
+      }
+
+      cardRows.add(Container(
+        child: Row(
+          children: currCards,
+        ),
+      ));
+    }
+
+    return cardRows;
   }
 }
