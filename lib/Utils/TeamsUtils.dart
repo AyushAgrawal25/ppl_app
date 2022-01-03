@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:image_picker/image_picker.dart';
 import 'package:ppl_app/Models/MemberData.dart';
 import 'package:ppl_app/Models/TeamData.dart';
 
@@ -29,17 +30,18 @@ class TeamsUtils {
     }
   }
 
-  Future<TeamData?> createTeam(TeamData teamData, File? imgFile) async {
+  Future<TeamData?> createTeam(TeamData teamData, XFile? imgFile) async {
     try {
       http.MultipartRequest request =
           http.MultipartRequest('POST', Uri.parse(API_URL + "/teams/create"));
 
       if (imgFile != null) {
+        int imgLen = await imgFile.length();
         request.files.add(http.MultipartFile(
           'image',
           imgFile.readAsBytes().asStream(),
-          imgFile.lengthSync(),
-          filename: imgFile.path.split("/").last,
+          imgLen,
+          filename: imgFile.name,
         ));
       }
 

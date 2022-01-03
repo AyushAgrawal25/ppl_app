@@ -10,6 +10,7 @@ import 'package:fluttericon/font_awesome_icons.dart';
 import 'package:ppl_app/UserInterface/Themes/AppColorScheme.dart';
 import 'package:ppl_app/UserInterface/Widgets/NeuWidgets/NeuFab/NeuFAB.dart';
 import 'package:ppl_app/UserInterface/Widgets/NeuWidgets/NeuContainer/NeuContainer.dart';
+import 'package:ppl_app/Utils/PlatformUtils.dart';
 
 class DisplayPicture extends StatefulWidget {
   String imgUrl;
@@ -124,6 +125,35 @@ class _DisplayPictureState extends State<DisplayPicture> {
     settingUpDimensions();
     settingUpBorderRadiusAndDefPic();
 
+    Widget imageWidget = Container();
+    OSPlatformType osPlatformType = PlatformUtils().getOSPlatformType();
+    if (osPlatformType == OSPlatformType.web) {
+      imageWidget = Image.network(
+        widget.imgUrl,
+        width: imgWidth,
+        height: imgHeight,
+        fit: BoxFit.cover,
+      );
+    } else {
+      imageWidget = CachedNetworkImage(
+        imageUrl: widget.imgUrl,
+        fit: BoxFit.cover,
+        width: imgWidth,
+        height: imgHeight,
+        errorWidget: (context, url, error) {
+          return Container(
+            alignment: Alignment.center,
+            child: Icon(
+              PhosphorIcons.user_circle_fill,
+              size: min(imgHeight, imgWidth),
+              color: AppColorScheme.textColor,
+            ),
+          );
+        },
+        // httpHeaders: {"Authorization": widget.token},
+      );
+    }
+
     return Container(
       height: containerHeight,
       width: containerWidth,
@@ -146,23 +176,7 @@ class _DisplayPictureState extends State<DisplayPicture> {
                   child: ClipRRect(
                       borderRadius: borderRadius,
                       child: (toShowPic)
-                          ? CachedNetworkImage(
-                              imageUrl: widget.imgUrl,
-                              fit: BoxFit.cover,
-                              width: imgWidth,
-                              height: imgHeight,
-                              errorWidget: (context, url, error) {
-                                return Container(
-                                  alignment: Alignment.center,
-                                  child: Icon(
-                                    PhosphorIcons.user_circle_fill,
-                                    size: min(imgHeight, imgWidth),
-                                    color: AppColorScheme.textColor,
-                                  ),
-                                );
-                              },
-                              // httpHeaders: {"Authorization": widget.token},
-                            )
+                          ? imageWidget
                           : Container(
                               height: imgWidth,
                               width: imgHeight,

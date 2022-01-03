@@ -1,7 +1,10 @@
 import 'dart:io';
+import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:fluttericon/font_awesome_icons.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:ppl_app/Models/AppState.dart';
 import 'package:ppl_app/Models/MemberData.dart';
 import 'package:ppl_app/Models/TeamData.dart';
@@ -20,6 +23,7 @@ import 'package:ppl_app/UserInterface/Widgets/NeuWidgets/NeuFormField/NeuTextFor
 import 'package:ppl_app/UserInterface/Widgets/NeuWidgets/NeuFormField/NeuTextFormLabel.dart';
 import 'package:ppl_app/UserInterface/Widgets/NeuWidgets/NeuText/NeuText.dart';
 import 'package:ppl_app/Utils/ImageUtils.dart';
+import 'package:ppl_app/Utils/PlatformUtils.dart';
 import 'package:ppl_app/Utils/TeamsUtils.dart';
 import 'package:ppl_app/Utils/ToastUtils.dart';
 import 'package:provider/provider.dart';
@@ -36,7 +40,8 @@ class _TeamEditPageState extends State<TeamEditPage> {
   }
 
   bool isLoading = false;
-  File? imgFile;
+  XFile? imgFile;
+  Uint8List? imgBytes;
   String name = "";
   MemberData? ownerInfo;
   List<MemberData> sponsors = [];
@@ -45,9 +50,30 @@ class _TeamEditPageState extends State<TeamEditPage> {
   List<MemberData> managers = [];
   List<MemberData> staff = [];
 
+  void setImgBytes() async {
+    setState(() {
+      isLoading = true;
+    });
+    if (imgFile != null) {
+      imgBytes = await imgFile!.readAsBytes();
+    }
+    setState(() {
+      isLoading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     _checkValidity();
+
+    Widget _mainBody = Container();
+    double scWidth = MediaQuery.of(context).size.width;
+    if (scWidth < 500) {
+      _mainBody = _mobileView();
+    } else {
+      _mainBody = _desktopView();
+    }
+
     return Container(
       child: Stack(
         children: [
@@ -57,299 +83,7 @@ class _TeamEditPageState extends State<TeamEditPage> {
               appBar: NeuAppBar(
                 title: "Team",
               ),
-              body: Container(
-                padding: EdgeInsets.symmetric(vertical: 0, horizontal: 30),
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        height: 20,
-                      ),
-                      Container(
-                        alignment: Alignment.center,
-                        child: NeuButton(
-                          borderRadius: BorderRadius.circular(25),
-                          color: AppColorScheme.bgColor,
-                          onPressed: () async {
-                            File? file = await ImageUtils().getImage();
-                            if (file != null) {
-                              setState(() {
-                                imgFile = file;
-                              });
-                            }
-                          },
-                          child: Container(
-                            height: MediaQuery.of(context).size.width * 0.65,
-                            width: MediaQuery.of(context).size.width * 0.65,
-                            padding: EdgeInsets.all(10),
-                            child: (imgFile == null)
-                                ? Container(
-                                    alignment: Alignment.center,
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        // Add
-                                        Icon(
-                                          Icons.add,
-                                          size: 55,
-                                          color:
-                                              AppColorScheme.lightDetailColor,
-                                        ),
-                                        NeuText(
-                                          text: "Logo",
-                                          textSize: NeuTextSize.light_16,
-                                          color:
-                                              AppColorScheme.lightDetailColor,
-                                        )
-                                      ],
-                                    ),
-                                  )
-                                : ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: Container(
-                                      child: Image.file(
-                                        imgFile!,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  ),
-                          ),
-                        ),
-                      ),
-
-                      SizedBox(
-                        height: 20,
-                      ),
-
-                      // Name.
-                      _memberTypeTitle("Name"),
-
-                      SizedBox(
-                        height: 10,
-                      ),
-
-                      Container(
-                        child: NeuTextFormField(
-                          onChange: (value) {
-                            setState(() {
-                              if (value != null) {
-                                name = value;
-                              }
-                            });
-                          },
-                        ),
-                      ),
-
-                      SizedBox(
-                        height: 25,
-                      ),
-
-                      // Owner.
-                      _memberTypeTitle("Owner"),
-
-                      SizedBox(
-                        height: 5,
-                      ),
-
-                      (ownerInfo == null)
-                          ? Container(
-                              alignment: Alignment.centerLeft,
-                              child: _memberAddButton(
-                                onPressed: _addOwnerPressed,
-                                title: "Add",
-                              ),
-                            )
-                          : OwnerCard(data: ownerInfo!),
-
-                      SizedBox(
-                        height: 20,
-                      ),
-
-                      // Sponsor Info.
-                      _memberTypeTitle("Sponsors"),
-
-                      SizedBox(
-                        height: 5,
-                      ),
-
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        child: Wrap(
-                          runAlignment: WrapAlignment.start,
-                          crossAxisAlignment: WrapCrossAlignment.start,
-                          alignment: WrapAlignment.start,
-                          children: [
-                            ...sponsors.map((sponsorData) {
-                              return MemberCard(
-                                data: sponsorData,
-                                toShowAge: false,
-                              );
-                            }).toList(),
-                            _memberAddButton(
-                                title: "Add", onPressed: _onAddSponsorPressed)
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(
-                        height: 20,
-                      ),
-
-                      // Coach Info.
-                      _memberTypeTitle("Coaches"),
-
-                      SizedBox(
-                        height: 5,
-                      ),
-
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        child: Wrap(
-                          runAlignment: WrapAlignment.start,
-                          crossAxisAlignment: WrapCrossAlignment.start,
-                          alignment: WrapAlignment.start,
-                          children: [
-                            ...coaches.map((coachData) {
-                              return MemberCard(
-                                data: coachData,
-                                toShowAge: false,
-                              );
-                            }).toList(),
-                            _memberAddButton(
-                                title: "Add", onPressed: _onAddCoachPressed)
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(
-                        height: 20,
-                      ),
-
-                      // Player Info.
-                      _memberTypeTitle("Players"),
-
-                      SizedBox(
-                        height: 5,
-                      ),
-
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        child: Wrap(
-                          runAlignment: WrapAlignment.start,
-                          crossAxisAlignment: WrapCrossAlignment.start,
-                          alignment: WrapAlignment.start,
-                          children: [
-                            ...players.map((playerData) {
-                              return MemberCard(
-                                data: playerData,
-                                onPressed: (playerData.playerData == null)
-                                    ? null
-                                    : () {
-                                        Navigator.of(context)
-                                            .push(MaterialPageRoute(
-                                          builder: (context) {
-                                            return PlayerPage(
-                                                memberData: playerData);
-                                          },
-                                        ));
-                                      },
-                              );
-                            }).toList(),
-                            _memberAddButton(
-                                title: "Add", onPressed: _onAddPlayerPressed)
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(
-                        height: 20,
-                      ),
-
-                      // Manager Info.
-                      _memberTypeTitle("Managers"),
-
-                      SizedBox(
-                        height: 5,
-                      ),
-
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        child: Wrap(
-                          runAlignment: WrapAlignment.start,
-                          crossAxisAlignment: WrapCrossAlignment.start,
-                          alignment: WrapAlignment.start,
-                          children: [
-                            ...managers.map((managerData) {
-                              return MemberCard(
-                                data: managerData,
-                                toShowAge: false,
-                              );
-                            }).toList(),
-                            _memberAddButton(
-                                title: "Add", onPressed: _onAddManagerPressed)
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(
-                        height: 20,
-                      ),
-
-                      // Staff Info.
-                      _memberTypeTitle("Staff Members"),
-
-                      SizedBox(
-                        height: 5,
-                      ),
-
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        child: Wrap(
-                          runAlignment: WrapAlignment.start,
-                          crossAxisAlignment: WrapCrossAlignment.start,
-                          alignment: WrapAlignment.start,
-                          children: [
-                            ...staff.map((staffData) {
-                              return MemberCard(
-                                data: staffData,
-                                toShowAge: false,
-                              );
-                            }).toList(),
-                            _memberAddButton(
-                                title: "Add", onPressed: _onAddStaffPressed)
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(
-                        height: 20,
-                      ),
-
-                      // Create Button.
-                      NeuButton(
-                        borderRadius: BorderRadius.circular(10),
-                        color: (isFormValid)
-                            ? AppColorScheme.themeColor
-                            : AppColorScheme.darkDividerColor,
-                        isDisabled: !isFormValid,
-                        child: Container(
-                          alignment: Alignment.center,
-                          child: NeuText(
-                            text: "Create",
-                            color: AppColorScheme.bgColor,
-                            textSize: NeuTextSize.bold_18,
-                          ),
-                        ),
-                        onPressed: _onCreatePressed,
-                      ),
-
-                      SizedBox(
-                        height: 30,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              body: _mainBody,
             ),
           ),
 
@@ -509,6 +243,446 @@ class _TeamEditPageState extends State<TeamEditPage> {
     });
   }
 
+  Widget _mobileView() {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 0, horizontal: 30),
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            SizedBox(
+              height: 20,
+            ),
+
+            _logoWidget(size: MediaQuery.of(context).size.width * 0.65),
+
+            SizedBox(
+              height: 20,
+            ),
+
+            // Name.
+            _nameField(),
+
+            SizedBox(
+              height: 25,
+            ),
+
+            // Owner.
+            _memberTypeTitle("Owner"),
+
+            SizedBox(
+              height: 5,
+            ),
+
+            (ownerInfo == null)
+                ? Container(
+                    alignment: Alignment.centerLeft,
+                    child: _memberAddButton(
+                      onPressed: _addOwnerPressed,
+                    ),
+                  )
+                : OwnerCard(data: ownerInfo!),
+
+            SizedBox(
+              height: 20,
+            ),
+            // Player Info.
+            _memberTypeTitle("Players"),
+
+            SizedBox(
+              height: 5,
+            ),
+
+            _memberCards(players, _onAddPlayerPressed),
+
+            SizedBox(
+              height: 20,
+            ),
+
+            // Sponsor Info.
+            _memberTypeTitle("Sponsors"),
+
+            SizedBox(
+              height: 5,
+            ),
+
+            _memberCards(sponsors, _onAddSponsorPressed),
+
+            SizedBox(
+              height: 20,
+            ),
+
+            // Coach Info.
+            _memberTypeTitle("Coaches"),
+
+            SizedBox(
+              height: 5,
+            ),
+
+            _memberCards(coaches, _onAddCoachPressed),
+
+            SizedBox(
+              height: 20,
+            ),
+
+            // Manager Info.
+            _memberTypeTitle("Managers"),
+
+            SizedBox(
+              height: 5,
+            ),
+
+            _memberCards(managers, _onAddManagerPressed),
+
+            SizedBox(
+              height: 20,
+            ),
+
+            // Staff Info.
+            _memberTypeTitle("Staff Members"),
+
+            SizedBox(
+              height: 5,
+            ),
+
+            _memberCards(staff, _onAddStaffPressed),
+
+            SizedBox(
+              height: 20,
+            ),
+
+            // Create Button.
+            NeuButton(
+              borderRadius: BorderRadius.circular(10),
+              color: (isFormValid)
+                  ? AppColorScheme.themeColor
+                  : AppColorScheme.darkDividerColor,
+              isDisabled: !isFormValid,
+              child: Container(
+                alignment: Alignment.center,
+                child: NeuText(
+                  text: "Create",
+                  color: AppColorScheme.bgColor,
+                  textSize: NeuTextSize.bold_18,
+                ),
+              ),
+              onPressed: _onCreatePressed,
+            ),
+
+            SizedBox(
+              height: 30,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _desktopView() {
+    int flex1 = 1, flex2 = 2;
+    double scWidth = MediaQuery.of(context).size.width;
+    double scHeight = MediaQuery.of(context).size.height;
+    if (scWidth < 1000) {
+      flex2 = 1;
+    }
+
+    double contSize = min(250, scHeight * 0.35);
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20),
+      height: scHeight,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Title and Owner.
+          Flexible(
+            flex: flex1,
+            child: Container(
+              height: scHeight,
+              alignment: Alignment.topCenter,
+              margin: EdgeInsets.symmetric(horizontal: 30),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    height: 20,
+                  ),
+
+                  Expanded(child: _logoWidget(size: contSize)),
+
+                  SizedBox(
+                    height: 20,
+                  ),
+
+                  // Name.
+                  _nameField(),
+
+                  SizedBox(
+                    height: 25,
+                  ),
+
+                  // Owner.
+                  _memberTypeTitle("Owner"),
+
+                  SizedBox(
+                    height: 5,
+                  ),
+
+                  (ownerInfo == null)
+                      ? Container(
+                          alignment: Alignment.centerLeft,
+                          child: _memberAddButton(
+                            onPressed: _addOwnerPressed,
+                          ),
+                        )
+                      : OwnerCard(data: ownerInfo!),
+
+                  SizedBox(
+                    height: 25,
+                  ),
+
+                  // Create Button.
+                  NeuButton(
+                    borderRadius: BorderRadius.circular(10),
+                    color: (isFormValid)
+                        ? AppColorScheme.themeColor
+                        : AppColorScheme.darkDividerColor,
+                    isDisabled: !isFormValid,
+                    child: Container(
+                      alignment: Alignment.center,
+                      child: NeuText(
+                        text: "Create",
+                        color: AppColorScheme.bgColor,
+                        textSize: NeuTextSize.bold_18,
+                      ),
+                    ),
+                    onPressed: _onCreatePressed,
+                  ),
+
+                  SizedBox(
+                    height: 20,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Members.
+          Flexible(
+              flex: flex2,
+              child: Container(
+                height: scHeight,
+                child: SingleChildScrollView(
+                  child: Container(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Player Info.
+                        _memberContainer([
+                          _memberTypeTitle("Players"),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          _memberCards(players, _onAddPlayerPressed),
+                          SizedBox(
+                            height: 20,
+                          ),
+                        ]),
+
+                        // Sponsor Info.
+                        _memberContainer([
+                          _memberTypeTitle("Sponsors"),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          _memberCards(sponsors, _onAddSponsorPressed),
+                          SizedBox(
+                            height: 20,
+                          ),
+                        ]),
+
+                        // Coach Info.
+                        _memberContainer([
+                          _memberTypeTitle("Coaches"),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          _memberCards(coaches, _onAddCoachPressed),
+                          SizedBox(
+                            height: 20,
+                          ),
+                        ]),
+
+                        // Manager Info.
+                        _memberContainer([
+                          _memberTypeTitle("Managers"),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          _memberCards(managers, _onAddManagerPressed),
+                          SizedBox(
+                            height: 20,
+                          ),
+                        ]),
+
+                        // Staff Info.
+                        _memberContainer([
+                          _memberTypeTitle("Staff Members"),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          _memberCards(staff, _onAddStaffPressed),
+                          SizedBox(
+                            height: 20,
+                          ),
+                        ])
+                      ],
+                    ),
+                  ),
+                ),
+              ))
+        ],
+      ),
+    );
+  }
+
+  Widget _logoWidget({required double size}) {
+    Widget _imageWidget = Container();
+    OSPlatformType osPlatformType = PlatformUtils().getOSPlatformType();
+    if (osPlatformType == OSPlatformType.web) {
+      _imageWidget = ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          child: (imgBytes == null)
+              ? LoaderPage()
+              : Image.memory(
+                  imgBytes!,
+                  fit: BoxFit.cover,
+                ),
+        ),
+      );
+    } else {
+      _imageWidget = ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          child: Image.file(
+            File(imgFile!.path),
+            fit: BoxFit.cover,
+          ),
+        ),
+      );
+    }
+
+    return AspectRatio(
+      aspectRatio: 1,
+      child: Container(
+        alignment: Alignment.center,
+        child: NeuButton(
+          borderRadius: BorderRadius.circular(25),
+          color: AppColorScheme.bgColor,
+          onPressed: () async {
+            XFile? file = await ImageUtils().getImage();
+            if (file != null) {
+              setState(() {
+                imgFile = file;
+              });
+              setImgBytes();
+            }
+          },
+          child: Container(
+            height: size,
+            width: size,
+            padding: EdgeInsets.all(10),
+            child: (imgFile == null)
+                // (true)
+                ? Container(
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Add
+                        Icon(
+                          Icons.add,
+                          size: 55,
+                          color: AppColorScheme.lightDetailColor,
+                        ),
+                        NeuText(
+                          text: "Logo",
+                          textSize: NeuTextSize.light_16,
+                          color: AppColorScheme.lightDetailColor,
+                        )
+                      ],
+                    ),
+                  )
+                : _imageWidget,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _nameField() {
+    return Container(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _memberTypeTitle("Name"),
+          SizedBox(
+            height: 10,
+          ),
+          Container(
+            child: NeuTextFormField(
+              onChange: (value) {
+                setState(() {
+                  if (value != null) {
+                    name = value;
+                  }
+                });
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _memberContainer(List<Widget> children) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: children,
+      ),
+    );
+  }
+
+  Widget _memberCards(List<MemberData> members, Function _onAddPressed) {
+    return Container(
+      alignment: Alignment.centerLeft,
+      child: Wrap(
+        runAlignment: WrapAlignment.start,
+        crossAxisAlignment: WrapCrossAlignment.start,
+        alignment: WrapAlignment.start,
+        children: [
+          ...members.map((memberData) {
+            return MemberCard(
+              data: memberData,
+              toShowAge: (memberData.type == MemberType.player),
+              onPressed: (memberData.playerData == null)
+                  ? null
+                  : () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) {
+                          return PlayerPage(memberData: memberData);
+                        },
+                      ));
+                    },
+            );
+          }).toList(),
+          _memberAddButton(onPressed: _onAddPressed)
+        ],
+      ),
+    );
+  }
+
   Widget _memberTypeTitle(String title) {
     return Container(
       alignment: Alignment.centerLeft,
@@ -520,11 +694,11 @@ class _TeamEditPageState extends State<TeamEditPage> {
     );
   }
 
-  Widget _memberAddButton(
-      {required String title, required Function onPressed}) {
+  Widget _memberAddButton({required Function onPressed}) {
     return Container(
-      width: (MediaQuery.of(context).size.width - 60) / 3,
-      padding: EdgeInsets.symmetric(horizontal: 5, vertical: 10),
+      margin: EdgeInsets.symmetric(horizontal: 5, vertical: 10),
+      height: min((MediaQuery.of(context).size.width - 60) / 3, 100),
+      width: min((MediaQuery.of(context).size.width - 60) / 3, 100),
       child: NeuButton(
         color: AppColorScheme.bgColor,
         padding: EdgeInsets.symmetric(vertical: 10, horizontal: 5),
@@ -542,7 +716,7 @@ class _TeamEditPageState extends State<TeamEditPage> {
               ),
               Container(
                 child: NeuText(
-                  text: title,
+                  text: "Add",
                   color: AppColorScheme.lightDetailColor,
                   textSize: NeuTextSize.light_12,
                 ),

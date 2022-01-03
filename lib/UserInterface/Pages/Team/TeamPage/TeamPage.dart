@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:fluttericon/font_awesome_icons.dart';
 import 'package:ppl_app/Models/AppState.dart';
@@ -48,8 +50,6 @@ class _TeamPageState extends State<TeamPage> {
     AppState appStateListen = Provider.of<AppState>(context, listen: true);
     TeamData data = appStateListen.teams[widget.teamId]!;
 
-    print("Updating.... From Team Page.");
-
     data.members.forEach((member) {
       switch (member.type) {
         case MemberType.owner:
@@ -73,6 +73,29 @@ class _TeamPageState extends State<TeamPage> {
       }
     });
 
+    Widget mainBody = Container();
+
+    double scWidth = MediaQuery.of(context).size.width;
+    if (scWidth < 500) {
+      mainBody = _mobileView(
+          data: data,
+          ownerInfo: ownerInfo,
+          sponsors: sponsors,
+          players: players,
+          coaches: coaches,
+          managers: managers,
+          staff: staff);
+    } else {
+      mainBody = _desktopView(
+          data: data,
+          ownerInfo: ownerInfo,
+          sponsors: sponsors,
+          players: players,
+          coaches: coaches,
+          managers: managers,
+          staff: staff);
+    }
+
     return Container(
       child: Stack(
         children: [
@@ -82,237 +105,7 @@ class _TeamPageState extends State<TeamPage> {
               appBar: NeuAppBar(
                 title: "Team Info",
               ),
-              body: Container(
-                padding: EdgeInsets.symmetric(vertical: 0, horizontal: 30),
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      // Name.
-                      Container(
-                        alignment: Alignment.center,
-                        child: NeuText(
-                          text: data.name,
-                          color: AppColorScheme.darkDetailColor,
-                          textSize: NeuTextSize.bold_25,
-                        ),
-                      ),
-
-                      SizedBox(
-                        height: 15,
-                      ),
-
-                      // logo.
-                      (data.logoFile != null)
-                          ? Container(
-                              child: DisplayPicture(
-                                imgUrl: LOGO_URL + "/" + data.logoFile!,
-                                isEditable: false,
-                                height:
-                                    MediaQuery.of(context).size.width * 0.75,
-                                width: MediaQuery.of(context).size.width * 0.75,
-                                isDeletable: false,
-                                contPadding: 20,
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                            )
-                          : NeuContainer(
-                              child: Container(
-                                height:
-                                    MediaQuery.of(context).size.width * 0.75,
-                                width: MediaQuery.of(context).size.width * 0.75,
-                                child: Icon(
-                                  FontAwesome.file_image,
-                                  size: (MediaQuery.of(context).size.width *
-                                          0.75) -
-                                      100,
-                                  color: AppColorScheme.lightDividerColor,
-                                ),
-                              ),
-                            ),
-
-                      SizedBox(
-                        height: 20,
-                      ),
-
-                      // Owner Info.
-                      _memberTypeTitle("Owner"),
-
-                      SizedBox(
-                        height: 5,
-                      ),
-
-                      Container(
-                        child: OwnerCard(
-                          data: ownerInfo!,
-                        ),
-                      ),
-
-                      SizedBox(
-                        height: 20,
-                      ),
-
-                      // Sponsor Info.
-                      _memberTypeTitle("Sponsors"),
-
-                      SizedBox(
-                        height: 5,
-                      ),
-
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        child: Wrap(
-                          runAlignment: WrapAlignment.start,
-                          crossAxisAlignment: WrapCrossAlignment.start,
-                          alignment: WrapAlignment.start,
-                          children: [
-                            ...sponsors.map((sponsorData) {
-                              return MemberCard(
-                                data: sponsorData,
-                                toShowAge: false,
-                              );
-                            }).toList(),
-                            _memberAddButton(
-                                title: "Add", onPressed: _onAddSponsorPressed)
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(
-                        height: 20,
-                      ),
-
-                      // Coach Info.
-                      _memberTypeTitle("Coaches"),
-
-                      SizedBox(
-                        height: 5,
-                      ),
-
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        child: Wrap(
-                          runAlignment: WrapAlignment.start,
-                          crossAxisAlignment: WrapCrossAlignment.start,
-                          alignment: WrapAlignment.start,
-                          children: [
-                            ...coaches.map((coachData) {
-                              return MemberCard(
-                                data: coachData,
-                                toShowAge: false,
-                              );
-                            }).toList(),
-                            _memberAddButton(
-                                title: "Add", onPressed: _onAddCoachPressed)
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        height: 20,
-                      ),
-
-                      // Player Info.
-                      _memberTypeTitle("Players"),
-
-                      SizedBox(
-                        height: 5,
-                      ),
-
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        child: Wrap(
-                          runAlignment: WrapAlignment.start,
-                          crossAxisAlignment: WrapCrossAlignment.start,
-                          alignment: WrapAlignment.start,
-                          children: [
-                            ...players.map((playerData) {
-                              return MemberCard(
-                                data: playerData,
-                                onPressed: (playerData.playerData == null)
-                                    ? null
-                                    : () {
-                                        Navigator.of(context)
-                                            .push(MaterialPageRoute(
-                                          builder: (context) {
-                                            return PlayerPage(
-                                                memberData: playerData);
-                                          },
-                                        ));
-                                      },
-                              );
-                            }).toList(),
-                            _memberAddButton(
-                                title: "Add", onPressed: _onAddPlayerPressed)
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(
-                        height: 20,
-                      ),
-
-                      // Manager Info.
-                      _memberTypeTitle("Managers"),
-
-                      SizedBox(
-                        height: 5,
-                      ),
-
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        child: Wrap(
-                          runAlignment: WrapAlignment.start,
-                          crossAxisAlignment: WrapCrossAlignment.start,
-                          alignment: WrapAlignment.start,
-                          children: [
-                            ...managers.map((managerData) {
-                              return MemberCard(
-                                data: managerData,
-                                toShowAge: false,
-                              );
-                            }).toList(),
-                            _memberAddButton(
-                                title: "Add", onPressed: _onAddManagerPressed)
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(
-                        height: 20,
-                      ),
-
-                      // Staff Info.
-                      _memberTypeTitle("Staff Members"),
-
-                      SizedBox(
-                        height: 5,
-                      ),
-
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        child: Wrap(
-                          runAlignment: WrapAlignment.start,
-                          crossAxisAlignment: WrapCrossAlignment.start,
-                          alignment: WrapAlignment.start,
-                          children: [
-                            ...staff.map((staffData) {
-                              return MemberCard(
-                                data: staffData,
-                                toShowAge: false,
-                              );
-                            }).toList(),
-                            _memberAddButton(
-                                title: "Add", onPressed: _onAddStaffPressed)
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(
-                        height: 40,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              body: mainBody,
             ),
           ),
 
@@ -412,11 +205,358 @@ class _TeamPageState extends State<TeamPage> {
     });
   }
 
-  Widget _memberAddButton(
-      {required String title, required Function onPressed}) {
+  // Main Page for responsive view.
+  Widget _desktopView({
+    required TeamData data,
+    required MemberData? ownerInfo,
+    required List<MemberData> sponsors,
+    required List<MemberData> players,
+    required List<MemberData> coaches,
+    required List<MemberData> managers,
+    required List<MemberData> staff,
+  }) {
+    int flex1 = 1, flex2 = 2;
+    double scWidth = MediaQuery.of(context).size.width;
+    double scHeight = MediaQuery.of(context).size.height;
+    if (scWidth < 1000) {
+      flex2 = 1;
+    }
+
+    double contSize = min(360, scHeight * 0.4);
+    double imgSize = contSize;
     return Container(
-      width: (MediaQuery.of(context).size.width - 60) / 3,
-      padding: EdgeInsets.symmetric(horizontal: 5, vertical: 10),
+      height: scHeight,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Title and owner.
+          Flexible(
+            flex: flex1,
+            child: Container(
+              height: scHeight,
+              alignment: Alignment.topCenter,
+              margin: EdgeInsets.symmetric(horizontal: 30),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    height: 25,
+                  ),
+
+                  // Name.
+                  _teamName(data),
+
+                  SizedBox(
+                    height: 15,
+                  ),
+
+                  // logo.
+                  _logoWidget(
+                    data: data,
+                    contSize: contSize,
+                    imgSize: imgSize,
+                  ),
+
+                  SizedBox(
+                    height: 30,
+                  ),
+
+                  // Owner Info.
+                  _memberTypeTitle("Owner"),
+
+                  SizedBox(
+                    height: 5,
+                  ),
+
+                  Container(
+                    child: OwnerCard(
+                      data: ownerInfo!,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Members
+          Flexible(
+              flex: flex2,
+              child: Container(
+                height: scHeight,
+                child: SingleChildScrollView(
+                  child: Container(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Player Info.
+                        _memberContainer([
+                          _memberTypeTitle("Players"),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          _memberCards(players, _onAddPlayerPressed),
+                          SizedBox(
+                            height: 20,
+                          ),
+                        ]),
+
+                        // Sponsor Info.
+                        _memberContainer([
+                          _memberTypeTitle("Sponsors"),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          _memberCards(sponsors, _onAddSponsorPressed),
+                          SizedBox(
+                            height: 20,
+                          ),
+                        ]),
+
+                        // Coach Info.
+                        _memberContainer([
+                          _memberTypeTitle("Coaches"),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          _memberCards(coaches, _onAddCoachPressed),
+                          SizedBox(
+                            height: 20,
+                          ),
+                        ]),
+
+                        // Manager Info.
+                        _memberContainer([
+                          _memberTypeTitle("Managers"),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          _memberCards(managers, _onAddManagerPressed),
+                          SizedBox(
+                            height: 20,
+                          ),
+                        ]),
+
+                        // Staff Info.
+                        _memberContainer([
+                          _memberTypeTitle("Staff Members"),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          _memberCards(staff, _onAddStaffPressed),
+                        ])
+                      ],
+                    ),
+                  ),
+                ),
+              ))
+        ],
+      ),
+    );
+  }
+
+  Widget _mobileView({
+    required TeamData data,
+    required MemberData? ownerInfo,
+    required List<MemberData> sponsors,
+    required List<MemberData> players,
+    required List<MemberData> coaches,
+    required List<MemberData> managers,
+    required List<MemberData> staff,
+  }) {
+    double scWidth = MediaQuery.of(context).size.width;
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 0, horizontal: 30),
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Name.
+            _teamName(data),
+
+            SizedBox(
+              height: 15,
+            ),
+
+            // logo.
+            _logoWidget(
+                data: data,
+                contSize: scWidth * 0.75,
+                imgSize: scWidth * 0.75 - 100),
+
+            SizedBox(
+              height: 20,
+            ),
+
+            // Owner Info.
+            _memberTypeTitle("Owner"),
+
+            SizedBox(
+              height: 5,
+            ),
+
+            Container(
+              child: OwnerCard(
+                data: ownerInfo!,
+              ),
+            ),
+
+            SizedBox(
+              height: 20,
+            ),
+
+            // Player Info.
+            _memberTypeTitle("Players"),
+
+            SizedBox(
+              height: 5,
+            ),
+
+            _memberCards(players, _onAddPlayerPressed),
+
+            SizedBox(
+              height: 20,
+            ),
+
+            // Sponsor Info.
+            _memberTypeTitle("Sponsors"),
+
+            SizedBox(
+              height: 5,
+            ),
+
+            _memberCards(sponsors, _onAddSponsorPressed),
+
+            SizedBox(
+              height: 20,
+            ),
+
+            // Coach Info.
+            _memberTypeTitle("Coaches"),
+
+            SizedBox(
+              height: 5,
+            ),
+
+            _memberCards(coaches, _onAddCoachPressed),
+
+            SizedBox(
+              height: 20,
+            ),
+
+            // Manager Info.
+            _memberTypeTitle("Managers"),
+
+            SizedBox(
+              height: 5,
+            ),
+
+            _memberCards(managers, _onAddManagerPressed),
+
+            SizedBox(
+              height: 20,
+            ),
+
+            // Staff Info.
+            _memberTypeTitle("Staff Members"),
+
+            SizedBox(
+              height: 5,
+            ),
+
+            _memberCards(staff, _onAddStaffPressed),
+
+            SizedBox(
+              height: 40,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _teamName(TeamData data) {
+    return Container(
+      alignment: Alignment.center,
+      child: NeuText(
+        text: data.name,
+        color: AppColorScheme.darkDetailColor,
+        textSize: NeuTextSize.bold_25,
+      ),
+    );
+  }
+
+  Widget _logoWidget(
+      {required TeamData data,
+      required double contSize,
+      required double imgSize}) {
+    return (data.logoFile != null)
+        ? Container(
+            child: DisplayPicture(
+              imgUrl: LOGO_URL + "/" + data.logoFile!,
+              isEditable: false,
+              height: contSize,
+              width: contSize,
+              isDeletable: false,
+              contPadding: 0,
+              borderRadius: BorderRadius.circular(15),
+            ),
+          )
+        : NeuContainer(
+            child: Container(
+              height: contSize,
+              width: contSize,
+              child: Icon(
+                FontAwesome.users,
+                size: imgSize * 0.75,
+                color: AppColorScheme.lightDividerColor,
+              ),
+            ),
+          );
+  }
+
+  Widget _memberCards(List<MemberData> members, Function _onAddPressed) {
+    return Container(
+      alignment: Alignment.centerLeft,
+      child: Wrap(
+        runAlignment: WrapAlignment.start,
+        crossAxisAlignment: WrapCrossAlignment.start,
+        alignment: WrapAlignment.start,
+        children: [
+          ...members.map((memberData) {
+            return MemberCard(
+              data: memberData,
+              toShowAge: (memberData.type == MemberType.player),
+              onPressed: (memberData.playerData == null)
+                  ? null
+                  : () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) {
+                          return PlayerPage(memberData: memberData);
+                        },
+                      ));
+                    },
+            );
+          }).toList(),
+          _memberAddButton(onPressed: _onAddPressed)
+        ],
+      ),
+    );
+  }
+
+  Widget _memberContainer(List<Widget> children) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: children,
+      ),
+    );
+  }
+
+  Widget _memberAddButton({required Function onPressed}) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 5, vertical: 10),
+      height: min((MediaQuery.of(context).size.width - 60) / 3, 100),
+      width: min((MediaQuery.of(context).size.width - 60) / 3, 100),
       child: NeuButton(
         color: AppColorScheme.bgColor,
         padding: EdgeInsets.symmetric(vertical: 10, horizontal: 5),
@@ -434,7 +574,7 @@ class _TeamPageState extends State<TeamPage> {
               ),
               Container(
                 child: NeuText(
-                  text: title,
+                  text: "Add",
                   color: AppColorScheme.lightDetailColor,
                   textSize: NeuTextSize.light_12,
                 ),

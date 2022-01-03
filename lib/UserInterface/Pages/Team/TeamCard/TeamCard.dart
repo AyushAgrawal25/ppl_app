@@ -61,7 +61,7 @@ class _TeamCardState extends State<TeamCard> {
                           height: 90,
                           width: 90,
                           child: Icon(
-                            FontAwesome.file_image,
+                            FontAwesome.users,
                             size: 55,
                             color: AppColorScheme.lightDividerColor,
                           ),
