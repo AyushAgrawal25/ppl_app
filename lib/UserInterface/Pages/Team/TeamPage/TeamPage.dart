@@ -221,6 +221,9 @@ class _TeamPageState extends State<TeamPage> {
     if (scWidth < 1000) {
       flex2 = 1;
     }
+
+    double contSize = min(360, scHeight * 0.4);
+    double imgSize = contSize;
     return Container(
       height: scHeight,
       child: Row(
@@ -248,7 +251,11 @@ class _TeamPageState extends State<TeamPage> {
                   ),
 
                   // logo.
-                  _logoWidget(data: data, contSize: 360, imgSize: 300),
+                  _logoWidget(
+                    data: data,
+                    contSize: contSize,
+                    imgSize: imgSize,
+                  ),
 
                   SizedBox(
                     height: 30,
@@ -489,7 +496,7 @@ class _TeamPageState extends State<TeamPage> {
               height: contSize,
               width: contSize,
               isDeletable: false,
-              contPadding: 20,
+              contPadding: 0,
               borderRadius: BorderRadius.circular(15),
             ),
           )

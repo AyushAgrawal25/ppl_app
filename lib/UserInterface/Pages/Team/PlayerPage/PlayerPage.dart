@@ -17,6 +17,31 @@ class PlayerPage extends StatefulWidget {
 class _PlayerPageState extends State<PlayerPage> {
   @override
   Widget build(BuildContext context) {
+    Widget _mainBody = Container();
+    double scWidth = MediaQuery.of(context).size.width;
+    if (scWidth < 500) {
+      _mainBody = _mobileView();
+    } else {
+      _mainBody = _desktopView();
+    }
+    return Container(
+      child: Stack(
+        children: [
+          // Main Page.
+          Container(
+            child: Scaffold(
+              appBar: NeuAppBar(
+                title: "Player Info",
+              ),
+              body: _mainBody,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _mobileView() {
     String speciality = "";
     switch (widget.memberData.playerData!.speciality) {
       case PlayerSpeciality.allRounder:
@@ -31,213 +56,337 @@ class _PlayerPageState extends State<PlayerPage> {
     }
 
     return Container(
-      child: Stack(
-        children: [
-          // Main Page.
-          Container(
-            child: Scaffold(
-              appBar: NeuAppBar(
-                title: "Player Info",
+        padding: EdgeInsets.symmetric(vertical: 0, horizontal: 30),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: 5,
               ),
-              body: Container(
-                padding: EdgeInsets.symmetric(vertical: 0, horizontal: 30),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        height: 5,
-                      ),
 
-                      // Profile Pic.
-                      Container(
-                        alignment: Alignment.center,
-                        child: DisplayPicture(
-                          imgUrl: "",
-                          height: MediaQuery.of(context).size.width * 0.4,
-                          width: MediaQuery.of(context).size.width * 0.4,
-                          borderRadius: BorderRadius.circular(360),
-                          contPadding: 5,
-                          isEditable: false,
-                        ),
-                      ),
+              // Profile Pic.
+              Container(
+                alignment: Alignment.center,
+                child: DisplayPicture(
+                  imgUrl: "",
+                  height: MediaQuery.of(context).size.width * 0.4,
+                  width: MediaQuery.of(context).size.width * 0.4,
+                  borderRadius: BorderRadius.circular(360),
+                  contPadding: 5,
+                  isEditable: false,
+                ),
+              ),
 
-                      SizedBox(
-                        height: 17.5,
-                      ),
+              SizedBox(
+                height: 17.5,
+              ),
 
-                      // Name.
-                      Container(
-                        alignment: Alignment.center,
-                        child: NeuText(
-                          text: widget.memberData.firstName.trim() +
-                              " " +
-                              widget.memberData.lastName.trim(),
-                          color: AppColorScheme.textColor,
-                          textSize: NeuTextSize.bold_22,
-                          align: TextAlign.center,
-                          maxLines: 1,
-                        ),
-                      ),
+              // Name.
+              _nameWidget(),
 
-                      SizedBox(
-                        height: 10,
-                      ),
+              SizedBox(
+                height: 10,
+              ),
 
-                      // Speciality
-                      Container(
-                        alignment: Alignment.center,
-                        child: NeuText(
-                          text: "Forte",
-                          textSize: NeuTextSize.light_18,
-                          color: AppColorScheme.lightDetailColor,
-                        ),
-                      ),
+              // Speciality
+              _forteWidget(speciality),
 
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          vertical: 5,
-                        ),
-                        alignment: Alignment.center,
-                        child: NeuText(
-                          text: speciality,
-                          textSize: NeuTextSize.bold_25,
-                          color: AppColorScheme.darkDetailColor,
-                        ),
-                      ),
+              // Some Numbers.
+              _numbersInfo(),
 
-                      SizedBox(
-                        height: 15,
-                      ),
+              SizedBox(
+                height: 25,
+              ),
 
-                      // Some Numbers.
-                      Container(
-                        child: Row(
-                          children: [
-                            // Centuris.
-                            _infoTab(
-                              value: widget.memberData.playerData!.centuries,
-                              title: "Centuries",
-                            ),
+              // Batting Score.
+              _battingScoreWidget(),
 
-                            SizedBox(
-                              width: 15,
-                            ),
+              // Bowling Score.
+              _bowlingScoreWidget(),
+            ],
+          ),
+        ));
+  }
 
-                            // Matches.
-                            _infoTab(
-                              value: widget.memberData.playerData!.matches,
-                              title: "Matches",
-                            ),
+  Widget _desktopView() {
+    double scHeight = MediaQuery.of(context).size.height;
+    double scWidth = MediaQuery.of(context).size.width - 60;
+    String speciality = "";
+    switch (widget.memberData.playerData!.speciality) {
+      case PlayerSpeciality.allRounder:
+        speciality = "All Rounder";
+        break;
+      case PlayerSpeciality.batsman:
+        speciality = "Batsman";
+        break;
+      case PlayerSpeciality.bowler:
+        speciality = "Bowler";
+        break;
+    }
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 30),
+      height: scHeight,
+      child: Wrap(
+        direction: Axis.vertical,
+        children: [
+          // Profile Pic.
+          _desktopItemContainer(
+            _profilePic(size: scWidth / 4),
+          ),
 
-                            SizedBox(
-                              width: 15,
-                            ),
+          _desktopItemContainer(SizedBox(
+            height: 20,
+          )),
 
-                            // Wickets.
-                            _infoTab(
-                              value: widget.memberData.playerData!.wickets,
-                              title: "Wickets",
-                            ),
-                          ],
-                        ),
-                      ),
+          // Name.
+          _desktopItemContainer(_nameWidget()),
 
-                      SizedBox(
-                        height: 25,
-                      ),
+          _desktopItemContainer(SizedBox(
+            height: 25,
+          )),
 
-                      // Batting Score.
-                      Container(
-                        padding: EdgeInsets.symmetric(vertical: 10),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            NeuText(
-                              text: "Batting Score : ",
-                              textSize: NeuTextSize.bold_20,
-                              color: AppColorScheme.darkDetailColor,
-                              align: TextAlign.start,
-                            ),
-                            NeuText(
-                              text:
-                                  "${widget.memberData.playerData?.battingScore}/100",
-                              textSize: NeuTextSize.bold_20,
-                              color: AppColorScheme.darkDetailColor,
-                              align: TextAlign.start,
-                            ),
-                          ],
-                        ),
-                      ),
+          // Speciality
+          _desktopItemContainer(_forteWidget(speciality)),
 
-                      SizedBox(
-                        height: 5,
-                      ),
+          // Some Numbers.
+          _desktopItemContainer(_numbersInfo()),
 
-                      Container(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: LinearProgressIndicator(
-                            value:
-                                (widget.memberData.playerData!.battingScore) /
-                                    100,
-                            minHeight: 40,
-                          ),
-                        ),
-                      ),
+          _desktopItemContainer(SizedBox(
+            height: 25,
+          )),
 
-                      SizedBox(
-                        height: 20,
-                      ),
+          // Batting Score.
+          _desktopItemContainer(_battingScoreWidget()),
 
-                      // Bowling Score.
-                      Container(
-                        padding: EdgeInsets.symmetric(vertical: 10),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            NeuText(
-                              text: "Bowling Score : ",
-                              textSize: NeuTextSize.bold_20,
-                              color: AppColorScheme.darkDetailColor,
-                              align: TextAlign.start,
-                            ),
-                            NeuText(
-                              text:
-                                  "${widget.memberData.playerData?.bowlingScore}/100",
-                              textSize: NeuTextSize.bold_20,
-                              color: AppColorScheme.darkDetailColor,
-                              align: TextAlign.start,
-                            ),
-                          ],
-                        ),
-                      ),
+          // Bowling Score.
+          _desktopItemContainer(_bowlingScoreWidget()),
+        ],
+      ),
+    );
+  }
 
-                      SizedBox(
-                        height: 5,
-                      ),
+  Widget _desktopItemContainer(Widget child) {
+    double scWidth = MediaQuery.of(context).size.width;
+    int rowCount = 2;
+    // if ((scWidth >= 500) && (scWidth <= 1000)) {
+    //   rowCount = 2;
+    // }
 
-                      Container(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: LinearProgressIndicator(
-                            value:
-                                (widget.memberData.playerData!.bowlingScore) /
-                                    100,
-                            minHeight: 40,
-                          ),
-                        ),
-                      ),
+    scWidth -= 60;
+    return Container(
+      width: scWidth / rowCount,
+      padding: EdgeInsets.symmetric(horizontal: 30),
+      child: child,
+    );
+  }
 
-                      SizedBox(
-                        height: 30,
-                      ),
-                    ],
+  Widget _profilePic({required double size}) {
+    return AspectRatio(
+      aspectRatio: 1,
+      child: Container(
+        alignment: Alignment.center,
+        child: DisplayPicture(
+          imgUrl: "",
+          height: size,
+          width: size,
+          borderRadius: BorderRadius.circular(360),
+          contPadding: 5,
+          isEditable: false,
+        ),
+      ),
+    );
+  }
+
+  Widget _nameWidget() {
+    return Container(
+      child: NeuText(
+        text: widget.memberData.firstName.trim() +
+            " " +
+            widget.memberData.lastName.trim(),
+        color: AppColorScheme.textColor,
+        textSize: NeuTextSize.bold_22,
+        align: TextAlign.center,
+        maxLines: 1,
+      ),
+    );
+  }
+
+  Widget _forteWidget(String speciality) {
+    return Container(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            alignment: Alignment.center,
+            child: NeuText(
+              text: "Forte",
+              textSize: NeuTextSize.light_18,
+              color: AppColorScheme.lightDetailColor,
+            ),
+          ),
+          Container(
+            padding: EdgeInsets.symmetric(
+              vertical: 5,
+            ),
+            alignment: Alignment.center,
+            child: NeuText(
+              text: speciality,
+              textSize: NeuTextSize.bold_25,
+              color: AppColorScheme.darkDetailColor,
+            ),
+          ),
+          SizedBox(
+            height: 15,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _numbersInfo() {
+    return Container(
+      child: Row(
+        children: [
+          // Centuris.
+          _infoTab(
+            value: widget.memberData.playerData!.centuries,
+            title: "Centuries",
+          ),
+
+          SizedBox(
+            width: 15,
+          ),
+
+          // Matches.
+          _infoTab(
+            value: widget.memberData.playerData!.matches,
+            title: "Matches",
+          ),
+
+          SizedBox(
+            width: 15,
+          ),
+
+          // Wickets.
+          _infoTab(
+            value: widget.memberData.playerData!.wickets,
+            title: "Wickets",
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _battingScoreWidget() {
+    return Container(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Container(
+                    alignment: Alignment.centerRight,
+                    child: NeuText(
+                      text: "Batting Score : ",
+                      textSize: NeuTextSize.bold_20,
+                      color: AppColorScheme.darkDetailColor,
+                      align: TextAlign.start,
+                    ),
                   ),
                 ),
+                Expanded(
+                  child: Container(
+                    alignment: Alignment.centerRight,
+                    child: NeuText(
+                      text: "${widget.memberData.playerData?.battingScore}/100",
+                      textSize: NeuTextSize.bold_20,
+                      color: AppColorScheme.darkDetailColor,
+                      align: TextAlign.start,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(
+            height: 5,
+          ),
+          Container(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: LinearProgressIndicator(
+                value: (widget.memberData.playerData!.battingScore) / 100,
+                minHeight: 40,
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(AppColorScheme.themeColor),
               ),
             ),
           ),
+          SizedBox(
+            height: 20,
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _bowlingScoreWidget() {
+    return Container(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Container(
+                    alignment: Alignment.centerRight,
+                    child: NeuText(
+                      text: "Bowling Score : ",
+                      textSize: NeuTextSize.bold_20,
+                      color: AppColorScheme.darkDetailColor,
+                      align: TextAlign.start,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    alignment: Alignment.centerRight,
+                    child: NeuText(
+                      text: "${widget.memberData.playerData?.bowlingScore}/100",
+                      textSize: NeuTextSize.bold_20,
+                      color: AppColorScheme.darkDetailColor,
+                      align: TextAlign.start,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(
+            height: 5,
+          ),
+          Container(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: LinearProgressIndicator(
+                value: (widget.memberData.playerData!.bowlingScore) / 100,
+                minHeight: 40,
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(AppColorScheme.themeColor),
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 20,
+          )
         ],
       ),
     );

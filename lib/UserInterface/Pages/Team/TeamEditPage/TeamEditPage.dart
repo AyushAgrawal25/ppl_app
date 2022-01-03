@@ -385,6 +385,8 @@ class _TeamEditPageState extends State<TeamEditPage> {
     if (scWidth < 1000) {
       flex2 = 1;
     }
+
+    double contSize = min(250, scHeight * 0.35);
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20),
       height: scHeight,
@@ -405,7 +407,7 @@ class _TeamEditPageState extends State<TeamEditPage> {
                     height: 20,
                   ),
 
-                  _logoWidget(size: 250),
+                  Expanded(child: _logoWidget(size: contSize)),
 
                   SizedBox(
                     height: 20,
@@ -454,6 +456,10 @@ class _TeamEditPageState extends State<TeamEditPage> {
                       ),
                     ),
                     onPressed: _onCreatePressed,
+                  ),
+
+                  SizedBox(
+                    height: 20,
                   ),
                 ],
               ),
@@ -566,46 +572,49 @@ class _TeamEditPageState extends State<TeamEditPage> {
       );
     }
 
-    return Container(
-      alignment: Alignment.center,
-      child: NeuButton(
-        borderRadius: BorderRadius.circular(25),
-        color: AppColorScheme.bgColor,
-        onPressed: () async {
-          XFile? file = await ImageUtils().getImage();
-          if (file != null) {
-            setState(() {
-              imgFile = file;
-            });
-            setImgBytes();
-          }
-        },
-        child: Container(
-          height: size,
-          width: size,
-          padding: EdgeInsets.all(10),
-          child: (imgFile == null)
-              // (true)
-              ? Container(
-                  alignment: Alignment.center,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Add
-                      Icon(
-                        Icons.add,
-                        size: 55,
-                        color: AppColorScheme.lightDetailColor,
-                      ),
-                      NeuText(
-                        text: "Logo",
-                        textSize: NeuTextSize.light_16,
-                        color: AppColorScheme.lightDetailColor,
-                      )
-                    ],
-                  ),
-                )
-              : _imageWidget,
+    return AspectRatio(
+      aspectRatio: 1,
+      child: Container(
+        alignment: Alignment.center,
+        child: NeuButton(
+          borderRadius: BorderRadius.circular(25),
+          color: AppColorScheme.bgColor,
+          onPressed: () async {
+            XFile? file = await ImageUtils().getImage();
+            if (file != null) {
+              setState(() {
+                imgFile = file;
+              });
+              setImgBytes();
+            }
+          },
+          child: Container(
+            height: size,
+            width: size,
+            padding: EdgeInsets.all(10),
+            child: (imgFile == null)
+                // (true)
+                ? Container(
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Add
+                        Icon(
+                          Icons.add,
+                          size: 55,
+                          color: AppColorScheme.lightDetailColor,
+                        ),
+                        NeuText(
+                          text: "Logo",
+                          textSize: NeuTextSize.light_16,
+                          color: AppColorScheme.lightDetailColor,
+                        )
+                      ],
+                    ),
+                  )
+                : _imageWidget,
+          ),
         ),
       ),
     );
